@@ -26,8 +26,11 @@ export default function Header() {
 
   return (
     <>
+      {/* ================= HEADER ================= */}
+
       <header className="navbar">
 
+        {/* LOGO */}
         <a
           className="brand"
           href="#"
@@ -39,6 +42,7 @@ export default function Header() {
           />
         </a>
 
+        {/* DESKTOP NAVIGATION */}
         <nav className="desktop-nav">
 
           <a href="#games">
@@ -64,8 +68,10 @@ export default function Header() {
 
         </nav>
 
+        {/* NAVIGATION ACTIONS */}
         <div className="nav-actions">
 
+          {/* SEARCH */}
           <button
             className="icon-btn"
             onClick={() =>
@@ -78,6 +84,7 @@ export default function Header() {
             <Search size={19} />
           </button>
 
+          {/* LANGUAGE / CURRENCY */}
           <button
             className="locale"
             onClick={() =>
@@ -85,11 +92,20 @@ export default function Header() {
             }
             aria-label="Bahasa dan mata uang"
           >
-            <span className="flag">🇮🇩</span>
-            <span>ID / IDR</span>
-            <span className="locale-arrow">⌄</span>
+            <span className="flag">
+              🇮🇩
+            </span>
+
+            <span>
+              ID / IDR
+            </span>
+
+            <span className="locale-arrow">
+              ⌄
+            </span>
           </button>
 
+          {/* CART */}
           <button
             className="cart-btn"
             onClick={() =>
@@ -100,6 +116,7 @@ export default function Header() {
             <ShoppingCart size={19} />
           </button>
 
+          {/* LOGIN */}
           <button
             className="login-btn"
             onClick={() =>
@@ -111,6 +128,7 @@ export default function Header() {
             Masuk
           </button>
 
+          {/* MOBILE MENU */}
           <button
             className="menu-btn"
             onClick={() => setDrawer(true)}
@@ -122,6 +140,8 @@ export default function Header() {
         </div>
 
       </header>
+
+      {/* ================= MOBILE DRAWER ================= */}
 
       {drawer && (
         <div
@@ -136,6 +156,7 @@ export default function Header() {
             }
           >
 
+            {/* DRAWER HEADER */}
             <div className="drawer-head">
 
               <img
@@ -153,86 +174,127 @@ export default function Header() {
 
             </div>
 
+            {/* BERANDA */}
             <a
               href="#"
               onClick={closeDrawer}
             >
-              Beranda
+              <span>
+                Beranda
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* TOP UP GAMES */}
             <a
               href="#games"
               onClick={closeDrawer}
             >
-              Top Up Games
+              <span>
+                Top Up Games
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* LAYANAN GAMING */}
             <a
               href="#services"
               onClick={closeDrawer}
             >
-              Layanan Gaming
+              <span>
+                Layanan Gaming
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* VOUCHER */}
             <a
               href="#voucher"
               onClick={closeDrawer}
             >
-              Voucher
+              <span>
+                Voucher
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* PROMO */}
             <a
               href="#promo"
               onClick={closeDrawer}
             >
-              Promo
+              <span>
+                Promo
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* CEK TRANSAKSI */}
             <a
               href="#transaction"
               onClick={closeDrawer}
             >
-              Cek Transaksi
+              <span>
+                Cek Transaksi
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* LEADERBOARD */}
             <a
               href="#leaderboard"
               onClick={closeDrawer}
             >
-              Leaderboard
+              <span>
+                Leaderboard
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* ARTIKEL */}
             <a
               href="#articles"
               onClick={closeDrawer}
             >
-              Artikel
+              <span>
+                Artikel
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* KALKULATOR */}
             <a
               href="#calculator"
               onClick={closeDrawer}
             >
-              Kalkulator
+              <span>
+                Kalkulator
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* PUSAT BANTUAN */}
             <a
               href="#help"
               onClick={closeDrawer}
             >
-              Pusat Bantuan
+              <span>
+                Pusat Bantuan
+              </span>
+
               <ChevronRight size={17} />
             </a>
 
+            {/* LOGIN / REGISTER */}
             <button
               className="drawer-login"
               onClick={() =>
@@ -248,6 +310,7 @@ export default function Header() {
 
         </div>
       )}
+
     </>
-  );
-            }
+    );
+  )
