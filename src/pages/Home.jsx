@@ -1,23 +1,26 @@
 import React, { useMemo, useState } from 'react';
 import {
   Search,
-  Menu,
-  X,
-  ChevronRight,
   Gamepad2,
   ShieldCheck,
   Zap,
   Headphones,
-  ShoppingCart,
+  WalletCards,
+  Sparkles,
+  ArrowRight,
   ReceiptText,
   Trophy,
   BookOpen,
   HelpCircle,
-  MessageCircle,
-  Sparkles,
-  ArrowRight,
-  WalletCards
+  MessageCircle
 } from 'lucide-react';
+
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import GameCard from '../components/GameCard';
+import FeatureCard from '../components/FeatureCard';
+import PromoCard from '../components/PromoCard';
+import ServiceCard from '../components/ServiceCard';
 
 const games = [
   {
@@ -99,215 +102,45 @@ const promos = [
   }
 ];
 
-export default function Home() {
-  const [drawer, setDrawer] = useState(false);
+function Home() {
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
 
   const filteredGames = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const keyword = query.trim().toLowerCase();
 
-    if (!q) {
+    if (!keyword) {
       return games;
     }
 
     return games.filter((game) =>
-      `${game.name} ${game.publisher}`
+      `${game.name} ${game.publisher} ${game.tag}`
         .toLowerCase()
-        .includes(q)
+        .includes(keyword)
     );
   }, [query]);
 
   const notify = (message) => {
     setToast(message);
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       setToast('');
     }, 2600);
   };
 
-  const scrollTo = (id) => {
+  const scrollToSection = (id) => {
     document
       .getElementById(id)
       ?.scrollIntoView({
-        behavior: 'smooth'
+        behavior: 'smooth',
+        block: 'start'
       });
   };
 
   return (
     <div className="app">
 
-      {/* ================= NAVBAR ================= */}
-
-      <header className="navbar">
-
-        <a
-          className="brand"
-          href="#"
-          aria-label="SAVIXARA"
-        >
-          <img
-            src={`${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`}
-            alt="SAVIXARA"
-          />
-        </a>
-
-        <nav className="desktop-nav">
-          <a href="#games">
-            Top Up Games <span>⌄</span>
-          </a>
-
-          <a href="#services">
-            Layanan Gaming
-          </a>
-
-          <a href="#voucher">
-            Voucher
-          </a>
-
-          <a href="#promo">
-            Promo
-          </a>
-
-          <a href="#articles">
-            Artikel
-          </a>
-        </nav>
-
-        <div className="nav-actions">
-
-          <button
-            className="icon-btn"
-            onClick={() =>
-              document
-                .getElementById('search')
-                ?.focus()
-            }
-            aria-label="Cari"
-          >
-            <Search size={19} />
-          </button>
-
-          <button
-            className="locale"
-            onClick={() =>
-              notify('Bahasa Indonesia • Rupiah Indonesia')
-            }
-          >
-            🇮🇩 <span>ID / IDR</span>⌄
-          </button>
-
-          <button
-            className="cart-btn"
-            onClick={() =>
-              notify('Keranjang masih kosong.')
-            }
-            aria-label="Keranjang"
-          >
-            <ShoppingCart size={19} />
-          </button>
-
-          <button
-            className="login-btn"
-            onClick={() =>
-              notify(
-                'Halaman login akan dihubungkan ke backend.'
-              )
-            }
-          >
-            Masuk
-          </button>
-
-          <button
-            className="menu-btn"
-            onClick={() => setDrawer(true)}
-            aria-label="Menu"
-          >
-            <Menu size={22} />
-          </button>
-
-        </div>
-      </header>
-
-      {/* ================= MOBILE DRAWER ================= */}
-
-      {drawer && (
-        <div
-          className="drawer-overlay"
-          onClick={() => setDrawer(false)}
-        >
-          <aside
-            className="drawer"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            <div className="drawer-head">
-
-              <img
-                src={`${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`}
-                alt="SAVIXARA"
-              />
-
-              <button
-                className="icon-btn"
-                onClick={() => setDrawer(false)}
-                aria-label="Tutup menu"
-              >
-                <X size={21} />
-              </button>
-
-            </div>
-
-            {[
-              'Beranda',
-              'Top Up Games',
-              'Layanan Gaming',
-              'Voucher',
-              'Promo',
-              'Cek Transaksi',
-              'Leaderboard',
-              'Artikel',
-              'Kalkulator',
-              'Pusat Bantuan'
-            ].map((item, index) => (
-
-              <a
-                key={item}
-                href={
-                  index === 0
-                    ? '#'
-                    : `#${item
-                        .toLowerCase()
-                        .replaceAll(' ', '-')}`
-                }
-                onClick={() =>
-                  setDrawer(false)
-                }
-              >
-                {item}
-                <ChevronRight size={17} />
-              </a>
-
-            ))}
-
-            <button
-              className="drawer-login"
-              onClick={() =>
-                notify(
-                  'Login akan dihubungkan ke backend.'
-                )
-              }
-            >
-              Masuk / Daftar
-            </button>
-
-          </aside>
-        </div>
-      )}
-
-      {/* ================= MAIN ================= */}
+      <Header />
 
       <main>
 
@@ -332,9 +165,8 @@ export default function Home() {
             </h1>
 
             <p>
-              Top up game, voucher, dan layanan
-              gaming dalam satu tempat. Proses cepat,
-              aman, dan terpercaya.
+              Top up game, voucher, dan layanan gaming dalam satu tempat.
+              Proses cepat, aman, dan terpercaya.
             </p>
 
             <div className="search-box">
@@ -343,16 +175,19 @@ export default function Home() {
 
               <input
                 id="search"
+                type="search"
                 value={query}
                 onChange={(event) =>
                   setQuery(event.target.value)
                 }
                 placeholder="Cari game, layanan, atau voucher..."
+                aria-label="Cari game, layanan, atau voucher"
               />
 
               <button
-                onClick={() => scrollTo('games')}
-                aria-label="Cari game"
+                type="button"
+                onClick={() => scrollToSection('games')}
+                aria-label="Cari"
               >
                 <Search size={18} />
               </button>
@@ -363,6 +198,7 @@ export default function Home() {
 
               <div>
                 <Zap size={18} />
+
                 <span>
                   <b>Proses Cepat</b>
                   <small>Hitungan detik</small>
@@ -371,6 +207,7 @@ export default function Home() {
 
               <div>
                 <WalletCards size={18} />
+
                 <span>
                   <b>Harga Kompetitif</b>
                   <small>Selalu diperbarui</small>
@@ -379,6 +216,7 @@ export default function Home() {
 
               <div>
                 <ShieldCheck size={18} />
+
                 <span>
                   <b>Transaksi Aman</b>
                   <small>Data terlindungi</small>
@@ -387,6 +225,7 @@ export default function Home() {
 
               <div>
                 <Headphones size={18} />
+
                 <span>
                   <b>Customer Support</b>
                   <small>Siap membantu</small>
@@ -394,14 +233,12 @@ export default function Home() {
               </div>
 
             </div>
-          </div>
 
-          {/* HERO ART */}
+          </div>
 
           <div className="hero-art">
 
             <div className="orb orb-1"></div>
-
             <div className="orb orb-2"></div>
 
             <div className="character-placeholder">
@@ -426,7 +263,8 @@ export default function Home() {
 
         </section>
 
-        {/* ================= GAMES ================= */}
+
+        {/* GAME POPULER */}
 
         <section
           className="section"
@@ -447,18 +285,17 @@ export default function Home() {
               </h2>
 
               <p>
-                Pilih game dan temukan produk
-                top up yang kamu butuhkan.
+                Pilih game dan temukan produk top up
+                yang kamu butuhkan.
               </p>
 
             </div>
 
             <button
               className="outline-btn"
+              type="button"
               onClick={() =>
-                notify(
-                  'Katalog semua game akan tersedia di sini.'
-                )
+                notify('Katalog semua game akan segera tersedia.')
               }
             >
               Lihat Semua
@@ -470,22 +307,20 @@ export default function Home() {
           <div className="game-grid">
 
             {filteredGames.map((game) => (
-
               <GameCard
                 key={game.name}
                 game={game}
                 onClick={() =>
                   notify(
-                    `${game.name} dipilih.`
+                    `${game.name} dipilih. Halaman top up akan dihubungkan ke katalog produk.`
                   )
                 }
               />
-
             ))}
 
           </div>
 
-          {!filteredGames.length && (
+          {filteredGames.length === 0 && (
             <div className="empty">
               Game tidak ditemukan.
               Coba kata kunci lain.
@@ -494,9 +329,10 @@ export default function Home() {
 
         </section>
 
-        {/* ================= FEATURE ================= */}
 
-        <section className="section">
+        {/* FEATURE */}
+
+        <section className="section feature-section">
 
           <div className="feature-grid">
 
@@ -505,7 +341,9 @@ export default function Home() {
               text="Proses cepat dan mudah"
               cta="Top Up Sekarang"
               tone="blue"
-              onClick={() => scrollTo('games')}
+              onClick={() =>
+                scrollToSection('games')
+              }
             />
 
             <FeatureCard
@@ -514,7 +352,7 @@ export default function Home() {
               cta="Lihat Layanan"
               tone="purple"
               onClick={() =>
-                scrollTo('services')
+                scrollToSection('services')
               }
             />
 
@@ -534,7 +372,8 @@ export default function Home() {
 
         </section>
 
-        {/* ================= PROMO ================= */}
+
+        {/* PROMO */}
 
         <section
           className="section"
@@ -555,17 +394,18 @@ export default function Home() {
               </h2>
 
               <p>
-                Promo nantinya dapat dikelola
-                langsung dari Admin Panel.
+                Promo dapat dikelola langsung
+                dari Admin Panel nantinya.
               </p>
 
             </div>
 
             <button
               className="outline-btn"
+              type="button"
               onClick={() =>
                 notify(
-                  'Semua promo akan tersedia di halaman promo.'
+                  'Semua promo akan tersedia setelah modul promo aktif.'
                 )
               }
             >
@@ -578,7 +418,6 @@ export default function Home() {
           <div className="promo-grid">
 
             {promos.map((promo) => (
-
               <PromoCard
                 key={promo.title}
                 promo={promo}
@@ -588,14 +427,14 @@ export default function Home() {
                   )
                 }
               />
-
             ))}
 
           </div>
 
         </section>
 
-        {/* ================= SERVICES ================= */}
+
+        {/* SERVICES */}
 
         <section
           className="section"
@@ -624,9 +463,10 @@ export default function Home() {
 
             <button
               className="outline-btn"
+              type="button"
               onClick={() =>
                 notify(
-                  'Semua layanan akan tersedia di sini.'
+                  'Semua layanan akan tersedia setelah modul layanan aktif.'
                 )
               }
             >
@@ -639,7 +479,6 @@ export default function Home() {
           <div className="service-grid">
 
             {services.map((service) => (
-
               <ServiceCard
                 key={service.name}
                 service={service}
@@ -649,16 +488,16 @@ export default function Home() {
                   )
                 }
               />
-
             ))}
 
           </div>
 
         </section>
 
-        {/* ================= INFO ================= */}
 
-         <section
+        {/* INFO */}
+
+        <section
           className="section info-section"
           id="articles"
         >
@@ -678,6 +517,7 @@ export default function Home() {
             </p>
 
             <button
+              type="button"
               onClick={() =>
                 notify(
                   'Halaman artikel akan dihubungkan ke CMS.'
@@ -690,6 +530,7 @@ export default function Home() {
 
           </div>
 
+
           <div className="info-card">
 
             <ReceiptText size={22} />
@@ -700,14 +541,14 @@ export default function Home() {
 
             <p>
               Masukkan Order ID untuk melihat
-              status pembayaran dan proses
-              top up secara jelas.
+              status pembayaran dan proses top up.
             </p>
 
             <button
+              type="button"
               onClick={() =>
                 notify(
-                  'Cek transaksi akan dihubungkan ke backend.'
+                  'Fitur cek transaksi akan dihubungkan ke backend.'
                 )
               }
             >
@@ -716,6 +557,7 @@ export default function Home() {
             </button>
 
           </div>
+
 
           <div className="info-card">
 
@@ -726,12 +568,12 @@ export default function Home() {
             </h3>
 
             <p>
-              Sistem loyalty dan leaderboard
-              dapat dikembangkan setelah modul
-              akun dan transaksi aktif.
+              Sistem loyalty dan leaderboard akan
+              dikembangkan setelah modul akun aktif.
             </p>
 
             <button
+              type="button"
               onClick={() =>
                 notify(
                   'Leaderboard akan dihubungkan ke backend.'
@@ -746,7 +588,8 @@ export default function Home() {
 
         </section>
 
-        {/* ================= FAQ ================= */}
+
+        {/* FAQ */}
 
         <section className="faq section">
 
@@ -760,17 +603,18 @@ export default function Home() {
           </h2>
 
           <p>
-            FAQ, cara top up, pembayaran,
-            refund, dan Customer Service akan
-            tersedia dalam pusat bantuan SAVIXARA.
+            FAQ, cara top up, pembayaran, refund,
+            dan Customer Service akan tersedia
+            dalam pusat bantuan SAVIXARA.
           </p>
 
           <div className="faq-actions">
 
             <button
+              type="button"
               onClick={() =>
                 notify(
-                  'FAQ akan dihubungkan ke halaman bantuan.'
+                  'Pusat bantuan akan segera tersedia.'
                 )
               }
             >
@@ -779,9 +623,10 @@ export default function Home() {
 
             <button
               className="whatsapp"
+              type="button"
               onClick={() =>
                 notify(
-                  'WhatsApp CS akan dihubungkan setelah nomor bisnis tersedia.'
+                  'WhatsApp Customer Service akan dihubungkan setelah nomor bisnis tersedia.'
                 )
               }
             >
@@ -795,107 +640,18 @@ export default function Home() {
 
       </main>
 
-      {/* ================= FOOTER ================= */}
 
-      <footer className="footer">
+      <Footer />
 
-        <div className="footer-top">
 
-          <div className="footer-brand">
-
-            <img
-              src={`${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`}
-              alt="SAVIXARA"
-            />
-
-            <p>
-              SAVIXARA adalah platform gaming
-              untuk kebutuhan top up, voucher,
-              dan layanan gaming pilihan dengan
-              pengalaman yang praktis.
-            </p>
-
-          </div>
-
-          <FooterCol
-            title="Tentang SAVIXARA"
-            items={[
-              'Tentang Kami',
-              'Kenapa SAVIXARA',
-              'Keamanan Transaksi',
-              'Layanan Game'
-            ]}
-          />
-
-          <FooterCol
-            title="Peta Situs"
-            items={[
-              'Beranda',
-              'Top Up Games',
-              'Layanan Gaming',
-              'Voucher',
-              'Promo',
-              'Cek Transaksi',
-              'Artikel'
-            ]}
-          />
-
-          <FooterCol
-            title="Dukungan"
-            items={[
-              'Pusat Bantuan',
-              'FAQ',
-              'Cara Top Up',
-              'Cara Pembayaran',
-              'Refund',
-              'Hubungi Kami'
-            ]}
-          />
-
-          <FooterCol
-            title="Legalitas"
-            items={[
-              'Syarat & Ketentuan',
-              'Kebijakan Privasi',
-              'Kebijakan Refund',
-              'Kebijakan Cookie'
-            ]}
-          />
-
-          <FooterCol
-            title="Social Media"
-            items={[
-              'Instagram',
-              'TikTok',
-              'YouTube',
-              'Discord',
-              'WhatsApp'
-            ]}
-          />
-
-        </div>
-
-        <div className="footer-bottom">
-
-          <span>
-            © 2026 SAVIXARA. All rights reserved.
-          </span>
-
-          <span>
-            Top Up Game Jadi Lebih Mudah.
-          </span>
-
-        </div>
-
-      </footer>
-
-      {/* ================= FLOATING WHATSAPP ================= */}
+      {/* FLOATING WHATSAPP */}
 
       <button
         className="float-wa"
+        type="button"
         onClick={() =>
           notify(
-            'WhatsApp CS akan dihubungkan setelah nomor bisnis tersedia.'
+            'WhatsApp Customer Service akan dihubungkan setelah nomor bisnis tersedia.'
           )
         }
         aria-label="WhatsApp Customer Service"
@@ -903,7 +659,8 @@ export default function Home() {
         <MessageCircle size={24} />
       </button>
 
-      {/* ================= TOAST ================= */}
+
+      {/* TOAST */}
 
       {toast && (
         <div className="toast">
@@ -915,189 +672,4 @@ export default function Home() {
   );
 }
 
-
-/* ================= GAME CARD ================= */
-
-function GameCard({ game, onClick }) {
-  return (
-    <button
-      className={`game-card ${game.tone}`}
-      onClick={onClick}
-    >
-
-      <div className="cover">
-
-        <div className="cover-glow"></div>
-
-        <span>
-          {game.tag}
-        </span>
-
-        <Gamepad2 size={44} />
-
-      </div>
-
-      <div className="game-meta">
-
-        <div>
-
-          <b>
-            {game.name}
-          </b>
-
-          <small>
-            {game.publisher}
-          </small>
-
-        </div>
-
-        <ChevronRight size={18} />
-
-      </div>
-
-    </button>
-  );
-}
-
-
-/* ================= FEATURE CARD ================= */
-
-function FeatureCard({
-  title,
-  text,
-  cta,
-  tone,
-  onClick
-}) {
-  return (
-    <div
-      className={`feature-card ${tone}`}
-    >
-
-      <div className="feature-art">
-
-        <div className="feature-orb"></div>
-
-        <Gamepad2 size={50} />
-
-      </div>
-
-      <div className="feature-copy">
-
-        <b>
-          {title}
-        </b>
-
-        <span>
-          {text}
-        </span>
-
-        <button onClick={onClick}>
-          {cta}
-          <ArrowRight size={14} />
-        </button>
-
-      </div>
-
-    </div>
-  );
-}
-
-
-/* ================= PROMO CARD ================= */
-
-function PromoCard({ promo, onClick }) {
-  return (
-    <button
-      className={`promo-card ${promo.tone}`}
-      onClick={onClick}
-    >
-
-      <div className="promo-art">
-        <Sparkles size={40} />
-      </div>
-
-      <div>
-
-        <b>
-          {promo.title}
-        </b>
-
-        <span>
-          {promo.text}
-        </span>
-
-        <em>
-          Lihat penawaran
-          <ArrowRight size={13} />
-        </em>
-
-      </div>
-
-    </button>
-  );
-}
-
-
-/* ================= SERVICE CARD ================= */
-
-function ServiceCard({
-  service,
-  onClick
-}) {
-  return (
-    <button
-      className={`service-card ${service.tone}`}
-      onClick={onClick}
-    >
-
-      <div className="service-icon">
-        <Headphones size={25} />
-      </div>
-
-      <div>
-
-        <b>
-          {service.name}
-        </b>
-
-        <span>
-          {service.sub}
-        </span>
-
-      </div>
-
-      <ArrowRight size={18} />
-
-    </button>
-  );
-}
-
-
-/* ================= FOOTER COLUMN ================= */
-
-function FooterCol({
-  title,
-  items
-}) {
-  return (
-    <div className="footer-col">
-
-      <h4>
-        {title}
-      </h4>
-
-      {items.map((item) => (
-
-        <a
-          href="#"
-          key={item}
-        >
-          {item}
-        </a>
-
-      ))}
-
-    </div>
-    );
-}
+export default Home;
