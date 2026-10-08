@@ -315,6 +315,9 @@ a{
 
 .character-core{
   position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
   width:180px;
   height:180px;
   border-radius:50%;
@@ -333,7 +336,7 @@ a{
   color:white;
   box-shadow:
     0 0 80px rgba(0,217,255,.25);
-  z-index:2;
+  z-index:3;
 }
 
 .orb{
@@ -341,6 +344,7 @@ a{
   border-radius:50%;
   filter:blur(2px);
   pointer-events:none;
+  z-index:1;
 }
 
 .orb-1{
@@ -945,7 +949,7 @@ a{
 }
 
 /* =========================
-   FLOATING BUTTON
+   FLOATING WHATSAPP
 ========================= */
 
 .float-wa{
@@ -1081,12 +1085,6 @@ a{
     padding:0 9px;
   }
 
-  /*
-    HERO MOBILE
-    Visual hero dipisahkan dari headline
-    supaya ornamen tidak menabrak teks.
-  */
-
   .hero{
     min-height:auto;
     grid-template-columns:1fr;
@@ -1110,16 +1108,16 @@ a{
   }
 
   /*
-    Visual berada di atas headline,
-    tetapi diberi ruang sendiri.
+    Area visual dibuat terpisah
+    dari area headline.
   */
 
   .hero-art{
     order:-1;
     width:100%;
-    height:240px;
-    min-height:240px;
-    margin:0 0 18px;
+    height:250px;
+    min-height:250px;
+    margin:0 0 16px;
     overflow:hidden;
     position:relative;
     display:grid;
@@ -1131,10 +1129,19 @@ a{
     max-width:72vw;
   }
 
+  /*
+    Logo S selalu berada tepat
+    di tengah lingkaran.
+  */
+
   .character-core{
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
     width:105px;
     height:105px;
     font-size:70px;
+    z-index:3;
   }
 
   .orb-1{
@@ -1289,20 +1296,14 @@ a{
     display:none;
   }
 
-  /*
-    Sedikit tambahan ruang supaya
-    headline benar-benar terpisah
-    dari visual hero.
-  */
-
   .hero{
     padding-top:24px;
   }
 
   .hero-art{
-    height:225px;
-    min-height:225px;
-    margin-bottom:16px;
+    height:230px;
+    min-height:230px;
+    margin-bottom:14px;
   }
 
   .character-ring{
@@ -1313,6 +1314,9 @@ a{
     width:98px;
     height:98px;
     font-size:64px;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
   }
 
   .hero h1{
