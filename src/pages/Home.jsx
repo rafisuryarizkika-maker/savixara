@@ -1181,17 +1181,17 @@ function Home() {
 
       {/* FLOATING WHATSAPP */}
 
-      <button
-        className="float-wa"
-        type="button"
-        onClick={() =>
-          notify('Nomor WhatsApp bisnis belum dikonfigurasi.')
-        }
-        aria-label="WhatsApp Customer Service"
-      >
-        <MessageCircle size={24} />
-      </button>
-
+      
+<a
+  className="float-wa"
+  href="https://wa.me/6285795191215"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="WhatsApp Customer Service"
+>
+  <MessageCircle size={24} />
+</a>
+      
       {/* TOAST */}
 
       {toast && <div className="toast">{toast}</div>}
