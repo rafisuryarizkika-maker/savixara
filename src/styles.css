@@ -1452,3 +1452,45 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* FIX KARTU GAME UNTUK LAYAR HP */
+@media (max-width: 600px) {
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .game-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .game-meta {
+    min-width: 0;
+  }
+
+  .game-info {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .game-info b {
+    display: block;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .game-info small {
+    display: block;
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+}
