@@ -2405,3 +2405,69 @@ img {
     font-size: 12px;
   }
 }
+/* FIX FAQ SAVIXARA - OVERRIDE */
+.faq-list .faq-item {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 15px;
+  background: linear-gradient(145deg, #171B2A, #111522);
+}
+
+.faq-list .faq-question {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-height: 66px;
+  margin: 0;
+  padding: 17px 18px;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #F8FAFC !important;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.faq-list .faq-question span:first-child {
+  flex: 1;
+}
+
+.faq-list .faq-question .faq-icon {
+  flex: 0 0 24px;
+  color: #00D9FF !important;
+  font-size: 24px;
+  text-align: center;
+}
+
+.faq-list .faq-item .faq-answer {
+  margin: 0;
+  padding: 0 18px 18px;
+  color: #94A3B8 !important;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.faq-list .faq-item:has(.faq-answer) {
+  border-color: rgba(0, 217, 255, 0.45);
+}
+
+@media (max-width: 600px) {
+  .faq-list .faq-question {
+    min-height: 64px;
+    padding: 15px 14px;
+    font-size: 13px;
+  }
+
+  .faq-list .faq-item .faq-answer {
+    padding: 0 14px 15px;
+  }
+}
