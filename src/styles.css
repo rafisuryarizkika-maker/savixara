@@ -2075,4 +2075,31 @@ img {
   background: transparent !important;
   color: #7C3AED !important;
 }
+/* FIX TOMBOL LIHAT SEMUA SAVIXARA */
+.section-head .text-link {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #00D9FF !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
 
+.section-head .text-link:hover {
+  background: transparent !important;
+  color: #A78BFA !important;
+  box-shadow: none !important;
+}
+
+.section-head .text-link svg {
+  color: #00D9FF;
+  flex-shrink: 0;
+}
