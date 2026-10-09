@@ -266,13 +266,16 @@ if (item === 'Hubungi Kami') {
               <Youtube size={18} />
             </button>
 
-            <button
-              type="button"
-              aria-label="WhatsApp"
-              onClick={() => handleClick('WhatsApp')}
-            >
-              <MessageCircle size={18} />
-            </button>
+            
+<a
+  href="https://wa.me/6285795191215"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="WhatsApp SAVIXARA"
+>
+  <MessageCircle size={18} />
+</a>
+
 
           </div>
 
