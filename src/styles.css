@@ -1687,7 +1687,9 @@ img {
   }
 
   .brand img {
-    width: 112px;
+  width: 150px;
+  height: auto;
+  max-width: 100%;
   }
 
   .hero,
