@@ -2056,3 +2056,23 @@ img {
     border-radius: 12px;
   }
 }
+
+/* Tombol Lihat Semua - gaya premium */
+.view-all,
+.view-all-btn,
+.see-all-btn {
+  background: transparent !important;
+  color: #00D9FF !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 8px 0 !important;
+  font-weight: 600;
+}
+
+.view-all:hover,
+.view-all-btn:hover,
+.see-all-btn:hover {
+  background: transparent !important;
+  color: #7C3AED !important;
+}
+
