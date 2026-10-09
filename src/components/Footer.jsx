@@ -249,7 +249,7 @@ if (item === 'Hubungi Kami') {
 
             
 <a
-  href="https://tiktok.com/@savixara"
+  href="https://www.tiktok.com/@savixara"
   target="_blank"
   rel="noopener noreferrer"
   aria-label="TikTok SAVIXARA"
