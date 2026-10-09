@@ -235,6 +235,8 @@ function Home() {
   const [serverId, setServerId] = useState('');
 
   const [toastTimer, setToastTimer] = useState(null);
+  const [openFaq, setOpenFaq] = useState(null);
+  
 
   /* =======================================================
      TOAST
@@ -1124,60 +1126,53 @@ function Home() {
     </p>
 
     <div className="faq-list">
-      <details className="faq-item">
-        <summary>Bagaimana cara melakukan top up?</summary>
-        <p>
-          Pilih game dan nominal produk, lalu masukkan User ID
-          serta data pemain yang diminta. Saat ini, sistem checkout
-          dan pembayaran SAVIXARA belum aktif, sehingga pesanan
-          belum dapat diselesaikan melalui website.
-        </p>
-      </details>
+  {[
+    {
+      question: 'Bagaimana cara melakukan top up?',
+      answer: 'Pilih game dan nominal produk, lalu masukkan User ID serta data pemain yang diminta. Saat ini sistem checkout dan pembayaran SAVIXARA belum aktif.'
+    },
+    {
+      question: 'Di mana saya menemukan User ID dan Server ID?',
+      answer: 'Data tersebut biasanya tersedia di profil dalam game. Pastikan datanya sesuai dengan akun tujuan dan jangan pernah memberikan password akun game kepada siapa pun.'
+    },
+    {
+      question: 'Metode pembayaran apa yang tersedia?',
+      answer: 'Metode pembayaran SAVIXARA masih dalam persiapan. Jangan melakukan transfer berdasarkan instruksi yang belum terverifikasi.'
+    },
+    {
+      question: 'Bagaimana cara mengecek status transaksi?',
+      answer: 'Fitur pengecekan transaksi belum diaktifkan. Tombol Lanjutkan saat ini belum membuat pesanan sungguhan.'
+    },
+    {
+      question: 'Bagaimana jika ingin mengajukan refund?',
+      answer: 'Kebijakan refund resmi akan diumumkan ketika sistem transaksi SAVIXARA sudah tersedia.'
+    },
+    {
+      question: 'Bagaimana cara menghubungi Customer Service?',
+      answer: 'Kontak resmi Customer Service SAVIXARA masih disiapkan dan akan ditampilkan setelah kanal bantuan resmi tersedia.'
+    }
+  ].map((faq, index) => (
+    <div className="faq-item" key={faq.question}>
+      <button
+        type="button"
+        className="faq-question"
+        aria-expanded={openFaq === index}
+        onClick={() =>
+          setOpenFaq(openFaq === index ? null : index)
+        }
+      >
+        <span>{faq.question}</span>
+        <span className="faq-icon">
+          {openFaq === index ? '−' : '+'}
+        </span>
+      </button>
 
-      <details className="faq-item">
-        <summary>Di mana saya menemukan User ID dan Server ID?</summary>
-        <p>
-          Data tersebut biasanya dapat ditemukan di profil dalam
-          game. Pastikan datanya sesuai dengan akun tujuan.
-          Jangan pernah memberikan password akun game kepada siapa pun.
-        </p>
-      </details>
-
-      <details className="faq-item">
-        <summary>Metode pembayaran apa yang tersedia?</summary>
-        <p>
-          Metode pembayaran belum tersedia karena sistem pembayaran
-          SAVIXARA masih dalam persiapan. Jangan melakukan transfer
-          berdasarkan instruksi yang belum terverifikasi.
-        </p>
-      </details>
-
-      <details className="faq-item">
-        <summary>Bagaimana cara mengecek status transaksi?</summary>
-        <p>
-          Fitur pengecekan transaksi belum diaktifkan. Tombol
-          Lanjutkan saat ini belum membuat pesanan sungguhan.
-        </p>
-      </details>
-
-      <details className="faq-item">
-        <summary>Bagaimana jika ingin mengajukan refund?</summary>
-        <p>
-          Kebijakan refund resmi akan diumumkan ketika sistem
-          transaksi SAVIXARA sudah tersedia. Pastikan status
-          pembayaran terkonfirmasi sebelum menganggap transaksi berhasil.
-        </p>
-      </details>
-
-      <details className="faq-item">
-        <summary>Bagaimana cara menghubungi Customer Service?</summary>
-        <p>
-          Kontak resmi Customer Service SAVIXARA masih disiapkan.
-          Informasi kontak akan ditampilkan setelah kanal bantuan
-          resmi tersedia.
-        </p>
-      </details>
+      {openFaq === index && (
+        <p className="faq-answer">{faq.answer}</p>
+      )}
     </div>
+  ))}
+</div>
   </div>
 </section>
       </main>
