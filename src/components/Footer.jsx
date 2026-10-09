@@ -70,6 +70,12 @@ if (item === 'Beranda') {
 }
     
     if (item === 'Layanan Gaming') {
+      if (item === 'Voucher') {
+  if (onNotify) {
+    onNotify('Katalog voucher sedang disiapkan.');
+  }
+  return;
+      }
   document.getElementById('services')?.scrollIntoView({
     behavior: 'smooth',
     block: 'start'
