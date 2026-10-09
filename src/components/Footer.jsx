@@ -59,6 +59,12 @@ const footerColumns = [
 const WHATSAPP_NUMBER = "6285795191215";
 function Footer({ onNotify }) {
   const handleClick = (item) => {
+    
+if (item === 'Beranda') {
+  window.location.href = window.location.pathname;
+  return;
+}
+    
     if (item === 'Layanan Gaming') {
   document.getElementById('services')?.scrollIntoView({
     behavior: 'smooth',
