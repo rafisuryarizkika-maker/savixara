@@ -58,10 +58,25 @@ const footerColumns = [
 
 function Footer({ onNotify }) {
   const handleClick = (item) => {
-    if (onNotify) {
-      onNotify(`${item} akan segera tersedia.`);
+  if (item === 'FAQ' || item === 'Pusat Bantuan') {
+    const target = document.getElementById('help');
+
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    } else {
+      window.location.hash = 'help';
     }
-  };
+
+    return;
+  }
+
+  if (onNotify) {
+    onNotify(`${item} akan segera tersedia.`);
+  }
+};
 
   return (
     <footer className="footer">
