@@ -1546,11 +1546,16 @@ img {
     flex-shrink: 0;
   }
 
-  .locale,
-  .login-btn,
-  .cart-btn {
-    display: none !important;
-  }
+  .locale {
+  display: flex !important;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.login-btn,
+.cart-btn {
+  display: none !important;
+}
 
   .hero,
   .section,
