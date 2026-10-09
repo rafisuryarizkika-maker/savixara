@@ -58,16 +58,60 @@ const footerColumns = [
 
 function Footer({ onNotify }) {
   const handleClick = (item) => {
-  if (item === 'FAQ' || item === 'Pusat Bantuan') {
-    const target = document.getElementById('help');
+  const faqIndex = {
+    'Cara Top Up': 0,
+    'Cara Pembayaran': 2,
+    'Refund': 4,
+  };
 
-    if (target) {
-      target.scrollIntoView({
+  const isFaqLink =
+    item === 'FAQ' ||
+    item === 'Pusat Bantuan' ||
+    Object.prototype.hasOwnProperty.call(faqIndex, item);
+
+  if (isFaqLink) {
+    const section = document.getElementById('help');
+
+    if (!section) {
+      window.location.href =
+        `${window.location.pathname}#help`;
+      return;
+    }
+
+    const index = faqIndex[item];
+
+    if (index === undefined) {
+      section.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
-    } else {
-      window.location.hash = 'help';
+      return;
+    }
+
+    const buttons =
+      section.querySelectorAll('.faq-question');
+
+    const details =
+      section.querySelectorAll('details.faq-item');
+
+    if (buttons[index]) {
+      if (
+        buttons[index].getAttribute('aria-expanded') !== 'true'
+      ) {
+        buttons[index].click();
+      }
+
+      buttons[index].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    } else if (details[index]) {
+      details[index].open = true;
+
+      details[index].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
 
     return;
