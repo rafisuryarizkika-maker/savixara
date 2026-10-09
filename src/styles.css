@@ -1970,4 +1970,89 @@ img {
     grid-template-columns: 1fr;
   }
    }
+/* TOP UP MOBILE - FIX UTAMA */
+@media screen and (max-width: 760px) {
+  .topup-page,
+  .topup-layout,
+  .topup-products,
+  .topup-sidebar,
+  .topup-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
 
+  .topup-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .topup-sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .product-option {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .product-option strong,
+  .product-option small {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .form-group,
+  .form-group input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .form-group input {
+    background: #0E1320 !important;
+    color: #F8FAFC !important;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 12px;
+    padding: 13px;
+  }
+
+  .summary-row,
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .summary-row strong,
+  .summary-total strong {
+    max-width: 65%;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #7C3AED, #2563EB) !important;
+    color: #FFFFFF !important;
+    border: 0;
+    border-radius: 12px;
+  }
+}
