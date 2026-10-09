@@ -56,6 +56,7 @@ const footerColumns = [
   }
 ];
 
+const WHATSAPP_NUMBER = "6285795191215";
 function Footer({ onNotify }) {
   const handleClick = (item) => {
   const faqIndex = {
@@ -68,6 +69,15 @@ function Footer({ onNotify }) {
     item === 'FAQ' ||
     item === 'Pusat Bantuan' ||
     Object.prototype.hasOwnProperty.call(faqIndex, item);
+    
+if (item === 'Hubungi Kami') {
+  window.open(
+    `https://wa.me/${WHATSAPP_NUMBER}`,
+    '_blank',
+    'noopener,noreferrer'
+  );
+  return;
+}
 
   if (isFaqLink) {
     const section = document.getElementById('help');
