@@ -1442,24 +1442,6 @@ img {
     gap: 8px;
   }
 
-  .cover {
-    height: 110px;
-  }
-
-  .section-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .footer-top {
-    gap: 22px 12px;
-  }
-}
-
-/* =====================================================
-   REDUCED MOTION
-===================================================== */
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1468,6 +1450,8 @@ img {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
   }
   }
     
