@@ -290,12 +290,26 @@ function Home() {
       }
 
       if (Array.isArray(data) && data.length > 0) {
-        const normalizedGames = data.map((game) => ({
-          ...game,
-          slug: game.slug || createSlug(game.name),
-          tag: game.tag || game.name,
-          tone: getTone(game)
-        }));
+        const normalizedGames = data.map((game) => {
+const slug = game.slug || createSlug(game.name);
+
+const localCovers = {
+'mobile-legends': '/savixara/images/games/mobile-legends.png',
+'free-fire': '/savixara/images/games/free-fire.png',
+'pubg-mobile': '/savixara/images/games/pubg-mobile.png',
+'roblox': '/savixara/images/games/roblox.png',
+'honor-of-kings': '/savixara/images/games/honor-of-kings.png',
+'genshin-impact': '/savixara/images/games/genshin-impact.png'
+};
+
+return {
+...game,
+slug,
+tag: game.tag || game.name,
+tone: getTone(game),
+cover: localCovers[slug] || game.cover || game.icon || null
+};
+});
 
         setGames(normalizedGames);
         setDatabaseAvailable(true);
