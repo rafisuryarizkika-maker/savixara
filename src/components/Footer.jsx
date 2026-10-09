@@ -69,19 +69,21 @@ if (item === 'Beranda') {
   return;
 }
     
-    if (item === 'Layanan Gaming') {
-      if (item === 'Voucher') {
+if (item === 'Voucher') {
   if (onNotify) {
     onNotify('Katalog voucher sedang disiapkan.');
   }
   return;
-      }
+}
+
+if (item === 'Layanan Gaming') {
   document.getElementById('services')?.scrollIntoView({
     behavior: 'smooth',
     block: 'start'
   });
   return;
-    }
+}
+    
   const faqIndex = {
     'Cara Top Up': 0,
     'Cara Pembayaran': 2,
