@@ -59,6 +59,10 @@ const footerColumns = [
 const WHATSAPP_NUMBER = "6285795191215";
 function Footer({ onNotify }) {
   const handleClick = (item) => {
+    if (item === 'Top Up Games') {
+  window.location.href = `${window.location.pathname}#games`;
+  return;
+    }
     
 if (item === 'Beranda') {
   window.location.href = window.location.pathname;
