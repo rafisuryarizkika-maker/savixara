@@ -887,7 +887,7 @@ cover: localCovers[slug] || game.cover || game.icon || null
                       ...game,
                       tone: game.tone || getTone(game),
                       icon: game.icon_url || null,
-                      cover: game.cover_url || null
+                      cover: game.cover || game.cover_url || null,
                     }}
                     onClick={() => openGame(game)}
                   />
