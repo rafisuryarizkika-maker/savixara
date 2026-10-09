@@ -236,21 +236,27 @@ if (item === 'Hubungi Kami') {
 
           <div className="social-links">
 
-            <button
-              type="button"
-              aria-label="Instagram"
-              onClick={() => handleClick('Instagram')}
-            >
-              <Instagram size={18} />
-            </button>
+            
+<a
+  href="https://instagram.com/savixara"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Instagram SAVIXARA"
+>
+  <Instagram size={18} />
+</a>
+            
 
-            <button
-              type="button"
-              aria-label="TikTok"
-              onClick={() => handleClick('TikTok')}
-            >
-              <Music2 size={18} />
-            </button>
+            
+<a
+  href="https://tiktok.com/@savixara"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="TikTok SAVIXARA"
+>
+  <Music2 size={18} />
+</a>
+            
 
             <button
               type="button"
