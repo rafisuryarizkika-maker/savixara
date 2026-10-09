@@ -2239,3 +2239,39 @@ img {
     line-height: 1.7;
   }
 }
+/* SAVIXARA - Perapian akhir footer HP */
+@media (max-width: 600px) {
+  .footer-trust {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 10px;
+  }
+
+  .footer-trust > div {
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .footer-trust > div svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .footer-social .social-links {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-social .social-links button {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .footer-social .footer-help {
+    margin-top: 12px;
+  }
+}
