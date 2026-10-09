@@ -1714,3 +1714,35 @@ img {
     gap: 18px 10px;
   }
    }
+
+/* PULIHKAN ILUSTRASI HERO DI HP */
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 30px 15px 42px;
+    min-height: 0;
+  }
+
+  .hero-art {
+    grid-row: 1;
+    width: 100%;
+    min-height: 280px;
+    height: auto;
+  }
+
+  .hero-copy {
+    grid-row: 2;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .character-ring {
+    width: min(300px, 78vw);
+  }
+
+  .character-core {
+    width: 130px;
+    height: 130px;
+    font-size: 88px;
+  }
+}
