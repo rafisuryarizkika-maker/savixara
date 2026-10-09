@@ -2275,3 +2275,24 @@ img {
     margin-top: 12px;
   }
 }
+/* SAVIXARA - Footer bottom mobile fix */
+@media (max-width: 600px) {
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-right: 56px;
+  }
+
+  .footer-bottom span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.7;
+  }
+
+  .footer-social .footer-help {
+    margin-bottom: 10px;
+  }
+}
