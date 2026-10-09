@@ -1768,3 +1768,206 @@ img {
     max-width: 100%;
   }
 }
+
+/* SAVIXARA - FINAL SECTION LAYOUT FIX */
+
+.info-section {
+  display: block;
+}
+
+.info-section > .section-head {
+  display: flex;
+  width: 100%;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 170px;
+  padding: 22px;
+  background: linear-gradient(145deg, #171B2A, #111522);
+}
+
+.feature-icon,
+.service-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(124, 58, 237, 0.2);
+  color: #00D9FF;
+}
+
+.feature-card h3,
+.service-card h3,
+.promo-card h3 {
+  margin: 0;
+  color: #F8FAFC;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.feature-card p,
+.service-card p,
+.promo-card p {
+  margin: 0;
+  color: #94A3B8;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.promo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 190px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #171B2A, #111522);
+  color: #F8FAFC;
+}
+
+.promo-label {
+  color: #00D9FF;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.promo-card button,
+.service-card button,
+.info-card button,
+.faq-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 10px 13px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 11px;
+  background: linear-gradient(135deg, #7C3AED, #2563EB);
+  color: #FFFFFF;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: #111522;
+  color: #F8FAFC;
+}
+
+.info-card {
+  min-width: 0;
+  background: linear-gradient(145deg, #171B2A, #111522);
+}
+
+.info-card p {
+  min-height: 0;
+}
+
+.faq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.faq-actions .whatsapp {
+  background: #111522;
+  border-color: rgba(0, 217, 255, 0.35);
+}
+
+.footer-col button {
+  display: block;
+  width: 100%;
+  margin: 9px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #94A3B8;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.footer-col button:hover {
+  color: #00D9FF;
+}
+
+@media (max-width: 760px) {
+  .feature-grid,
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .promo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card,
+  .service-card,
+  .promo-card,
+  .info-card {
+    padding: 15px;
+  }
+
+  .footer-top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .feature-grid,
+  .service-grid,
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+   }
+
