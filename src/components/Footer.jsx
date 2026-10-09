@@ -204,7 +204,6 @@ function Footer({ onNotify }) {
     </footer>
   );
 }
-
 export default Footer;
 /* SAVIXARA - Footer premium dan responsif */
 .footer {
