@@ -59,6 +59,13 @@ const footerColumns = [
 const WHATSAPP_NUMBER = "6285795191215";
 function Footer({ onNotify }) {
   const handleClick = (item) => {
+    if (item === 'Layanan Gaming') {
+  document.getElementById('services')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+  return;
+    }
   const faqIndex = {
     'Cara Top Up': 0,
     'Cara Pembayaran': 2,
