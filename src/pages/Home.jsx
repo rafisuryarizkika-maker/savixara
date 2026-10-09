@@ -37,7 +37,8 @@ const fallbackGames = [
     tag: 'MLBB',
     tone: 'mlbb',
     slug: 'mobile-legends',
-    category: 'MOBA',
+cover: '/images/games/mobile-legends.png',
+category: 'MOBA',
     status: true
   },
   {
@@ -46,6 +47,7 @@ const fallbackGames = [
     tag: 'FF',
     tone: 'ff',
     slug: 'free-fire',
+    cover: '/images/games/free-fire.png',
     category: 'Battle Royale',
     status: true
   },
@@ -55,6 +57,7 @@ const fallbackGames = [
     tag: 'PUBG',
     tone: 'pubg',
     slug: 'pubg-mobile',
+    cover: '/images/games/pubg-mobile.png',
     category: 'Battle Royale',
     status: true
   },
@@ -64,6 +67,7 @@ const fallbackGames = [
     tag: 'RBLX',
     tone: 'roblox',
     slug: 'roblox',
+    cover: '/images/games/roblox.png',
     category: 'Adventure',
     status: true
   },
@@ -73,6 +77,7 @@ const fallbackGames = [
     tag: 'HOK',
     tone: 'hok',
     slug: 'honor-of-kings',
+    cover: '/images/games/honor-of-kings.png',
     category: 'MOBA',
     status: true
   },
@@ -82,6 +87,7 @@ const fallbackGames = [
     tag: 'GEN',
     tone: 'genshin',
     slug: 'genshin-impact',
+    cover: '/images/games/genshin-impact.png',
     category: 'RPG',
     status: true
   }
