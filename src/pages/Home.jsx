@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   Search,
@@ -15,148 +16,93 @@ import {
   BookOpen,
   HelpCircle,
   MessageCircle,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GameCard from '../components/GameCard';
-import FeatureCard from '../components/FeatureCard';
-import PromoCard from '../components/PromoCard';
-import ServiceCard from '../components/ServiceCard';
-
+import { supabase } from '../supabase';
 
 /* =========================================================
-   DATA GAME
+   DATA CADANGAN
+   Digunakan jika database belum dapat diakses.
 ========================================================= */
 
-const games = [
+const fallbackGames = [
   {
     name: 'Mobile Legends',
     publisher: 'Moonton',
     tag: 'MLBB',
     tone: 'mlbb',
-    slug: 'mobile-legends'
+    slug: 'mobile-legends',
+    category: 'MOBA',
+    status: true
   },
   {
     name: 'Free Fire',
     publisher: 'Garena',
     tag: 'FF',
     tone: 'ff',
-    slug: 'free-fire'
+    slug: 'free-fire',
+    category: 'Battle Royale',
+    status: true
   },
   {
     name: 'PUBG Mobile',
     publisher: 'Tencent Games',
     tag: 'PUBG',
     tone: 'pubg',
-    slug: 'pubg-mobile'
+    slug: 'pubg-mobile',
+    category: 'Battle Royale',
+    status: true
   },
   {
     name: 'Roblox',
     publisher: 'Roblox Corporation',
     tag: 'RBLX',
     tone: 'roblox',
-    slug: 'roblox'
+    slug: 'roblox',
+    category: 'Adventure',
+    status: true
   },
   {
     name: 'Honor of Kings',
     publisher: 'Tencent Games',
     tag: 'HOK',
     tone: 'hok',
-    slug: 'honor-of-kings'
+    slug: 'honor-of-kings',
+    category: 'MOBA',
+    status: true
   },
   {
     name: 'Genshin Impact',
     publisher: 'HoYoverse',
     tag: 'GEN',
     tone: 'genshin',
-    slug: 'genshin-impact'
+    slug: 'genshin-impact',
+    category: 'RPG',
+    status: true
   }
 ];
 
-
-/* =========================================================
-   PRODUK MOBILE LEGENDS
-========================================================= */
-
-const mobileLegendsProducts = [
-  {
-    id: 'ml-5',
-    amount: '5 Diamonds',
-    price: 1500
-  },
-  {
-    id: 'ml-12',
-    amount: '12 Diamonds',
-    price: 3500
-  },
-  {
-    id: 'ml-19',
-    amount: '19 Diamonds',
-    price: 5500
-  },
-  {
-    id: 'ml-28',
-    amount: '28 Diamonds',
-    price: 8000
-  },
-  {
-    id: 'ml-36',
-    amount: '36 Diamonds',
-    price: 10000
-  },
-  {
-    id: 'ml-44',
-    amount: '44 Diamonds',
-    price: 12000
-  },
-  {
-    id: 'ml-59',
-    amount: '59 Diamonds',
-    price: 16000
-  },
-  {
-    id: 'ml-85',
-    amount: '85 Diamonds',
-    price: 23000
-  },
-  {
-    id: 'ml-170',
-    amount: '170 Diamonds',
-    price: 45000
-  },
-  {
-    id: 'ml-240',
-    amount: '240 Diamonds',
-    price: 62000
-  },
-  {
-    id: 'ml-296',
-    amount: '296 Diamonds',
-    price: 76000
-  },
-  {
-    id: 'ml-408',
-    amount: '408 Diamonds',
-    price: 105000
-  },
-  {
-    id: 'ml-568',
-    amount: '568 Diamonds',
-    price: 145000
-  },
-  {
-    id: 'ml-875',
-    amount: '875 Diamonds',
-    price: 220000
-  }
+const fallbackMobileLegendsProducts = [
+  { id: 'ml-5', name: '5 Diamonds', selling_price: 1500 },
+  { id: 'ml-12', name: '12 Diamonds', selling_price: 3500 },
+  { id: 'ml-19', name: '19 Diamonds', selling_price: 5500 },
+  { id: 'ml-28', name: '28 Diamonds', selling_price: 8000 },
+  { id: 'ml-36', name: '36 Diamonds', selling_price: 10000 },
+  { id: 'ml-44', name: '44 Diamonds', selling_price: 12000 },
+  { id: 'ml-59', name: '59 Diamonds', selling_price: 16000 },
+  { id: 'ml-85', name: '85 Diamonds', selling_price: 23000 },
+  { id: 'ml-170', name: '170 Diamonds', selling_price: 45000 },
+  { id: 'ml-240', name: '240 Diamonds', selling_price: 62000 },
+  { id: 'ml-296', name: '296 Diamonds', selling_price: 76000 },
+  { id: 'ml-408', name: '408 Diamonds', selling_price: 105000 },
+  { id: 'ml-568', name: '568 Diamonds', selling_price: 145000 },
+  { id: 'ml-875', name: '875 Diamonds', selling_price: 220000 }
 ];
-
-
-/* =========================================================
-   LAYANAN
-========================================================= */
 
 const services = [
   {
@@ -175,11 +121,6 @@ const services = [
     tone: 'mabar'
   }
 ];
-
-
-/* =========================================================
-   PROMO
-========================================================= */
 
 const promos = [
   {
@@ -204,111 +145,225 @@ const promos = [
   }
 ];
 
+const features = [
+  {
+    title: 'Proses Cepat',
+    text: 'Pesanan diproses setelah pembayaran terverifikasi.',
+    icon: Zap
+  },
+  {
+    title: 'Harga Kompetitif',
+    text: 'Informasi harga produk tersedia dengan jelas.',
+    icon: WalletCards
+  },
+  {
+    title: 'Transaksi Aman',
+    text: 'Data pesanan dikelola dengan memperhatikan keamanan.',
+    icon: ShieldCheck
+  },
+  {
+    title: 'Customer Support',
+    text: 'Pusat bantuan untuk pertanyaan seputar layanan.',
+    icon: Headphones
+  }
+];
 
 /* =========================================================
-   FORMAT RUPIAH
+   HELPER
 ========================================================= */
 
-const formatRupiah = (value) => {
-  return new Intl.NumberFormat('id-ID', {
+const formatRupiah = (value) =>
+  new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     maximumFractionDigits: 0
-  }).format(value);
+  }).format(Number(value) || 0);
+
+const createSlug = (value = '') =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const getProductPrice = (product) => {
+  const promo = Number(product?.promo_price);
+
+  if (promo > 0) {
+    return promo;
+  }
+
+  return Number(product?.selling_price) || 0;
 };
 
+const getProductName = (product) =>
+  product?.name || product?.amount || 'Produk Game';
+
+const getTone = (game) => {
+  const slug = game?.slug || createSlug(game?.name);
+
+  const tones = {
+    'mobile-legends': 'mlbb',
+    'free-fire': 'ff',
+    'pubg-mobile': 'pubg',
+    roblox: 'roblox',
+    'honor-of-kings': 'hok',
+    'genshin-impact': 'genshin'
+  };
+
+  return tones[slug] || '';
+};
 
 /* =========================================================
    HOME
 ========================================================= */
 
 function Home() {
-
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
 
+  const [games, setGames] = useState(fallbackGames);
+  const [gamesLoading, setGamesLoading] = useState(true);
+  const [databaseAvailable, setDatabaseAvailable] = useState(false);
+
   const [selectedGame, setSelectedGame] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] =
-    useState(null);
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [userId, setUserId] = useState('');
   const [serverId, setServerId] = useState('');
 
-
-  /* =======================================================
-     SEARCH GAME
-  ======================================================= */
-
-  const filteredGames = useMemo(() => {
-
-    const keyword =
-      query.trim().toLowerCase();
-
-    if (!keyword) {
-      return games;
-    }
-
-    return games.filter((game) =>
-      `${game.name} ${game.publisher} ${game.tag}`
-        .toLowerCase()
-        .includes(keyword)
-    );
-
-  }, [query]);
-
+  const [toastTimer, setToastTimer] = useState(null);
 
   /* =======================================================
      TOAST
   ======================================================= */
 
   const notify = (message) => {
-
     setToast(message);
 
-    window.setTimeout(() => {
-      setToast('');
-    }, 2600);
+    if (toastTimer) {
+      window.clearTimeout(toastTimer);
+    }
 
+    const timer = window.setTimeout(() => {
+      setToast('');
+      setToastTimer(null);
+    }, 2800);
+
+    setToastTimer(timer);
   };
 
+  useEffect(() => {
+    return () => {
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+    };
+  }, [toastTimer]);
+
+  /* =======================================================
+     AMBIL GAME DARI SUPABASE
+  ======================================================= */
+
+  const loadGames = async () => {
+    setGamesLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .eq('status', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      if (Array.isArray(data) && data.length > 0) {
+        const normalizedGames = data.map((game) => ({
+          ...game,
+          slug: game.slug || createSlug(game.name),
+          tag: game.tag || game.name,
+          tone: getTone(game)
+        }));
+
+        setGames(normalizedGames);
+        setDatabaseAvailable(true);
+      } else {
+        setGames(fallbackGames);
+        setDatabaseAvailable(false);
+      }
+    } catch (error) {
+      console.error('Gagal memuat game:', error);
+      setGames(fallbackGames);
+      setDatabaseAvailable(false);
+    } finally {
+      setGamesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGames();
+  }, []);
+
+  /* =======================================================
+     PENCARIAN GAME
+  ======================================================= */
+
+  const filteredGames = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+
+    if (!keyword) {
+      return games;
+    }
+
+    return games.filter((game) =>
+      [
+        game.name,
+        game.publisher,
+        game.tag,
+        game.category
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(keyword)
+    );
+  }, [games, query]);
 
   /* =======================================================
      SCROLL
   ======================================================= */
 
   const scrollToSection = (id) => {
-
-    document
-      .getElementById(id)
-      ?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-
+    document.getElementById(id)?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   };
 
-
   /* =======================================================
-     BUKA KATALOG GAME
+     BUKA GAME
   ======================================================= */
 
-  const openGame = (game) => {
-
+  const openGame = async (game) => {
     if (!game) return;
 
     setSelectedGame(game);
     setSelectedProduct(null);
-
+    setProducts([]);
     setUserId('');
     setServerId('');
+    setProductsLoading(true);
+
+    const slug = game.slug || createSlug(game.name);
 
     window.history.replaceState(
       null,
       '',
-      `#topup/${game.slug || game.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')}`
+      `#topup/${slug}`
     );
 
     window.scrollTo({
@@ -316,17 +371,49 @@ function Home() {
       behavior: 'smooth'
     });
 
+    try {
+      if (!game.id) {
+        throw new Error('Game belum memiliki ID database.');
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('game_id', game.id)
+        .order('selling_price', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Gagal memuat produk:', error);
+
+      if (slug === 'mobile-legends') {
+        setProducts(fallbackMobileLegendsProducts);
+      } else {
+        setProducts([]);
+      }
+
+      notify(
+        'Data produk database belum dapat dimuat. Periksa koneksi dan kebijakan RLS.'
+      );
+    } finally {
+      setProductsLoading(false);
+    }
   };
 
-
   /* =======================================================
-     KEMBALI KE HOME
+     KEMBALI KE BERANDA
   ======================================================= */
 
   const closeCatalog = () => {
-
     setSelectedGame(null);
     setSelectedProduct(null);
+    setProducts([]);
+    setUserId('');
+    setServerId('');
 
     window.history.replaceState(
       null,
@@ -338,70 +425,52 @@ function Home() {
       top: 0,
       behavior: 'smooth'
     });
-
   };
 
-
   /* =======================================================
-     LANJUT CHECKOUT
+     CHECKOUT SEMENTARA
+     Belum membuat pesanan atau memproses pembayaran.
   ======================================================= */
 
   const handleContinue = () => {
-
     if (!userId.trim()) {
-
-      notify(
-        'Silakan masukkan User ID terlebih dahulu.'
-      );
-
+      notify('Silakan masukkan User ID terlebih dahulu.');
       return;
     }
 
-    if (!serverId.trim()) {
-
-      notify(
-        'Silakan masukkan Server ID terlebih dahulu.'
-      );
-
+    if (
+      selectedGame?.slug === 'mobile-legends' &&
+      !serverId.trim()
+    ) {
+      notify('Silakan masukkan Server ID terlebih dahulu.');
       return;
     }
 
     if (!selectedProduct) {
-
-      notify(
-        'Silakan pilih nominal Diamond terlebih dahulu.'
-      );
-
+      notify('Silakan pilih nominal produk terlebih dahulu.');
       return;
     }
 
     notify(
-      `Pesanan ${selectedProduct.amount} siap diproses.`
+      'Pilihan produk sudah siap. Sistem checkout dan pembayaran belum diaktifkan.'
     );
-
   };
-
 
   /* =======================================================
      KATALOG TOP UP
   ======================================================= */
 
   if (selectedGame) {
-
     const isMobileLegends =
-      selectedGame.slug === 'mobile-legends';
+      (selectedGame.slug || createSlug(selectedGame.name)) ===
+      'mobile-legends';
 
     return (
       <div className="app">
-
         <Header />
 
         <main>
-
           <section className="section topup-page">
-
-            {/* BACK */}
-
             <button
               type="button"
               className="outline-btn"
@@ -411,205 +480,130 @@ function Home() {
               Kembali
             </button>
 
-
-            {/* HEADER KATALOG */}
-
             <div className="topup-header">
-
               <div className="section-kicker">
                 <Gamepad2 size={18} />
                 TOP UP GAME
               </div>
 
-              <h1>
-                Top Up {selectedGame.name}
-              </h1>
+              <h1>Top Up {selectedGame.name}</h1>
 
               <p>
-                Pilih produk yang kamu inginkan,
-                masukkan data akun, lalu lanjutkan
-                ke proses pembayaran.
+                Pilih produk, masukkan data pemain,
+                lalu lanjutkan ke tahap berikutnya.
               </p>
-
             </div>
 
+            <div className="topup-layout">
+              <div className="topup-products">
+                <div className="topup-card">
+                  <div className="topup-card-head">
+                    <div>
+                      <span className="topup-label">
+                        {selectedGame.name.toUpperCase()}
+                      </span>
 
-            {!isMobileLegends ? (
+                      <h2>Pilih Produk</h2>
 
-              <div className="info-card">
-
-                <Gamepad2 size={32} />
-
-                <h3>
-                  Katalog {selectedGame.name}
-                </h3>
-
-                <p>
-                  Produk top up game ini sedang
-                  dipersiapkan dan akan segera tersedia
-                  di SAVIXARA.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={closeCatalog}
-                >
-                  Kembali ke Game
-                  <ArrowLeft size={16} />
-                </button>
-
-              </div>
-
-            ) : (
-
-              <div className="topup-layout">
-
-                {/* =================================================
-                   KOLOM PRODUK
-                ================================================== */}
-
-                <div className="topup-products">
-
-                  <div className="topup-card">
-
-                    <div className="topup-card-head">
-
-                      <div>
-
-                        <span className="topup-label">
-                          MOBILE LEGENDS
-                        </span>
-
-                        <h2>
-                          Pilih Nominal
-                        </h2>
-
-                        <p>
-                          Diamond akan diproses
-                          ke akun Mobile Legends kamu.
-                        </p>
-
-                      </div>
-
-                      <Gamepad2 size={28} />
-
+                      <p>
+                        Pilih nominal yang sesuai dengan kebutuhanmu.
+                      </p>
                     </div>
 
-
-                    <div className="product-grid">
-
-                      {mobileLegendsProducts.map(
-                        (product) => {
-
-                          const active =
-                            selectedProduct?.id ===
-                            product.id;
-
-                          return (
-                            <button
-                              key={product.id}
-                              type="button"
-                              className={
-                                `product-option ${
-                                  active
-                                    ? 'active'
-                                    : ''
-                                }`
-                              }
-                              onClick={() =>
-                                setSelectedProduct(
-                                  product
-                                )
-                              }
-                            >
-
-                              <div>
-
-                                <strong>
-                                  {product.amount}
-                                </strong>
-
-                                <small>
-                                  Instant Delivery
-                                </small>
-
-                              </div>
-
-                              <span>
-                                {formatRupiah(
-                                  product.price
-                                )}
-                              </span>
-
-                              {active && (
-                                <CheckCircle2
-                                  size={18}
-                                />
-                              )}
-
-                            </button>
-                          );
-
-                        }
-                      )}
-
-                    </div>
-
+                    <Gamepad2 size={28} />
                   </div>
 
+                  {productsLoading ? (
+                    <div className="empty-state">
+                      <RefreshCw size={24} />
+                      <p>Memuat produk dari database...</p>
+                    </div>
+                  ) : products.length > 0 ? (
+                    <div className="product-grid">
+                      {products.map((product) => {
+                        const price = getProductPrice(product);
+                        const active =
+                          selectedProduct?.id === product.id;
+
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            className={`product-option ${
+                              active ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setSelectedProduct({
+                                ...product,
+                                amount: getProductName(product),
+                                price
+                              })
+                            }
+                          >
+                            <div>
+                              <strong>
+                                {getProductName(product)}
+                              </strong>
+
+                              <small>
+                                {product.description ||
+                                  'Produk top up game'}
+                              </small>
+                            </div>
+
+                            <span>{formatRupiah(price)}</span>
+
+                            {active && (
+                              <CheckCircle2 size={18} />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <Gamepad2 size={30} />
+                      <h3>Produk belum tersedia</h3>
+                      <p>
+                        Tambahkan produk untuk game ini melalui
+                        tabel products di Supabase.
+                      </p>
+                    </div>
+                  )}
                 </div>
+              </div>
 
+              <div className="topup-sidebar">
+                <div className="topup-card">
+                  <div className="topup-card-head">
+                    <div>
+                      <span className="topup-label">
+                        DATA AKUN
+                      </span>
 
-                {/* =================================================
-                   CHECKOUT SIDEBAR
-                ================================================== */}
-
-                <div className="topup-sidebar">
-
-                  <div className="topup-card">
-
-                    <div className="topup-card-head">
-
-                      <div>
-
-                        <span className="topup-label">
-                          DATA AKUN
-                        </span>
-
-                        <h2>
-                          Detail Pemain
-                        </h2>
-
-                      </div>
-
-                      <ShieldCheck size={26} />
-
+                      <h2>Detail Pemain</h2>
                     </div>
 
+                    <ShieldCheck size={26} />
+                  </div>
 
+                  <div className="form-group">
+                    <label htmlFor="user-id">User ID</label>
+
+                    <input
+                      id="user-id"
+                      type="text"
+                      value={userId}
+                      onChange={(event) =>
+                        setUserId(event.target.value)
+                      }
+                      placeholder="Masukkan User ID"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {isMobileLegends && (
                     <div className="form-group">
-
-                      <label htmlFor="user-id">
-                        User ID
-                      </label>
-
-                      <input
-                        id="user-id"
-                        type="text"
-                        value={userId}
-                        onChange={(event) =>
-                          setUserId(
-                            event.target.value
-                          )
-                        }
-                        placeholder="Masukkan User ID"
-                      />
-
-                    </div>
-
-
-                    <div className="form-group">
-
                       <label htmlFor="server-id">
                         Server ID
                       </label>
@@ -619,183 +613,133 @@ function Home() {
                         type="text"
                         value={serverId}
                         onChange={(event) =>
-                          setServerId(
-                            event.target.value
-                          )
+                          setServerId(event.target.value)
                         }
                         placeholder="Masukkan Server ID"
+                        autoComplete="off"
                       />
-
                     </div>
+                  )}
 
+                  <div className="account-note">
+                    <ShieldCheck size={17} />
 
-                    <div className="account-note">
-
-                      <ShieldCheck size={17} />
-
-                      <span>
-                        Jangan berikan password
-                        akun game kamu.
-                      </span>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* RINGKASAN */}
-
-                  <div className="topup-card summary-card">
-
-                    <span className="topup-label">
-                      RINGKASAN PESANAN
+                    <span>
+                      Jangan berikan password akun game kamu.
                     </span>
-
-                    <h3>
-                      {selectedProduct
-                        ? selectedProduct.amount
-                        : 'Belum memilih produk'}
-                    </h3>
-
-
-                    <div className="summary-row">
-
-                      <span>
-                        Produk
-                      </span>
-
-                      <strong>
-                        {selectedProduct
-                          ? selectedProduct.amount
-                          : '-'}
-                      </strong>
-
-                    </div>
-
-
-                    <div className="summary-row">
-
-                      <span>
-                        Harga
-                      </span>
-
-                      <strong>
-                        {selectedProduct
-                          ? formatRupiah(
-                              selectedProduct.price
-                            )
-                          : '-'}
-                      </strong>
-
-                    </div>
-
-
-                    <div className="summary-total">
-
-                      <span>
-                        Total
-                      </span>
-
-                      <strong>
-                        {selectedProduct
-                          ? formatRupiah(
-                              selectedProduct.price
-                            )
-                          : 'Rp0'}
-                      </strong>
-
-                    </div>
-
-
-                    <button
-                      type="button"
-                      className="checkout-btn"
-                      onClick={handleContinue}
-                    >
-                      Lanjutkan
-                      <ArrowRight size={18} />
-                    </button>
-
                   </div>
-
                 </div>
 
+                <div className="topup-card summary-card">
+                  <span className="topup-label">
+                    RINGKASAN PESANAN
+                  </span>
+
+                  <h3>
+                    {selectedProduct
+                      ? selectedProduct.amount
+                      : 'Belum memilih produk'}
+                  </h3>
+
+                  <div className="summary-row">
+                    <span>Produk</span>
+
+                    <strong>
+                      {selectedProduct
+                        ? selectedProduct.amount
+                        : '-'}
+                    </strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>Harga</span>
+
+                    <strong>
+                      {selectedProduct
+                        ? formatRupiah(
+                            selectedProduct.price ??
+                              getProductPrice(selectedProduct)
+                          )
+                        : '-'}
+                    </strong>
+                  </div>
+
+                  <div className="summary-total">
+                    <span>Total</span>
+
+                    <strong>
+                      {selectedProduct
+                        ? formatRupiah(
+                            selectedProduct.price ??
+                              getProductPrice(selectedProduct)
+                          )
+                        : 'Rp0'}
+                    </strong>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="checkout-btn"
+                    onClick={handleContinue}
+                    disabled={
+                      productsLoading || products.length === 0
+                    }
+                  >
+                    Lanjutkan
+                    <ArrowRight size={18} />
+                  </button>
+
+                  <p className="checkout-disclaimer">
+                    Pembayaran belum terhubung. Tombol ini belum
+                    membuat transaksi sungguhan.
+                  </p>
+                </div>
               </div>
-
-            )}
-
+            </div>
           </section>
-
         </main>
 
         <Footer />
 
-        {toast && (
-          <div className="toast">
-            {toast}
-          </div>
-        )}
-
+        {toast && <div className="toast">{toast}</div>}
       </div>
     );
   }
 
-
   /* =========================================================
-     HOME NORMAL
-  ========================================================== */
+     BERANDA
+  ========================================================= */
 
   return (
     <div className="app">
-
       <Header />
 
       <main>
-
-        {/* =====================================================
-           HERO
-        ====================================================== */}
+        {/* HERO */}
 
         <section className="hero">
-
           <div className="hero-glow glow-a"></div>
           <div className="hero-glow glow-b"></div>
 
           <div className="hero-copy">
-
             <div className="eyebrow">
-
               <Sparkles size={14} />
-
               PLATFORM GAMING
-
             </div>
 
-
             <h1>
-
               Top Up Game
-
               <br />
-
               Jadi Lebih <span>Mudah</span>
-
             </h1>
 
-
             <p>
-
               Top up game, voucher, dan layanan gaming
-              dalam satu tempat.
-              Proses cepat, aman, dan terpercaya.
-
+              dalam satu tempat. Pilih game favoritmu
+              dan lihat katalog produk SAVIXARA.
             </p>
 
-
-            {/* SEARCH */}
-
             <div className="search-box">
-
               <Search size={20} />
 
               <input
@@ -803,650 +747,432 @@ function Home() {
                 type="search"
                 value={query}
                 onChange={(event) =>
-                  setQuery(
-                    event.target.value
-                  )
+                  setQuery(event.target.value)
                 }
                 placeholder="Cari game, layanan, atau voucher..."
-                aria-label="Cari game, layanan, atau voucher"
+                aria-label="Cari game"
               />
 
               <button
                 type="button"
-                onClick={() =>
-                  scrollToSection('games')
-                }
+                onClick={() => scrollToSection('games')}
                 aria-label="Cari"
               >
-
                 <Search size={18} />
-
               </button>
-
             </div>
-
-
-            {/* TRUST */}
 
             <div className="trust-row">
-
               <div>
-
                 <Zap size={18} />
-
                 <span>
-
-                  <b>
-                    Proses Cepat
-                  </b>
-
-                  <small>
-                    Hitungan detik
-                  </small>
-
+                  <b>Proses Cepat</b>
+                  <small>Informasi pesanan jelas</small>
                 </span>
-
               </div>
 
-
               <div>
-
                 <WalletCards size={18} />
-
                 <span>
-
-                  <b>
-                    Harga Kompetitif
-                  </b>
-
-                  <small>
-                    Selalu diperbarui
-                  </small>
-
+                  <b>Harga Kompetitif</b>
+                  <small>Harga dari katalog</small>
                 </span>
-
               </div>
 
-
               <div>
-
                 <ShieldCheck size={18} />
-
                 <span>
-
-                  <b>
-                    Transaksi Aman
-                  </b>
-
-                  <small>
-                    Data terlindungi
-                  </small>
-
+                  <b>Transaksi Aman</b>
+                  <small>Utamakan keamanan</small>
                 </span>
-
               </div>
-
 
               <div>
-
                 <Headphones size={18} />
-
                 <span>
-
-                  <b>
-                    Customer Support
-                  </b>
-
-                  <small>
-                    Siap membantu
-                  </small>
-
+                  <b>Customer Support</b>
+                  <small>Pusat bantuan</small>
                 </span>
-
               </div>
-
             </div>
-
           </div>
 
-
-          {/* HERO ART */}
-
           <div className="hero-art">
-
             <div className="orb orb-1"></div>
-
             <div className="orb orb-2"></div>
 
             <div className="character-placeholder">
-
               <div className="character-ring"></div>
-
-              <div className="character-core">
-                S
-              </div>
-
+              <div className="character-core">S</div>
             </div>
 
-
-            <div className="hero-chip chip-1">
-              TOP UP
-            </div>
-
+            <div className="hero-chip chip-1">TOP UP</div>
             <div className="hero-chip chip-2">
               FAST • SECURE
             </div>
-
           </div>
-
         </section>
 
+        {/* GAME POPULER */}
 
-        {/* =====================================================
-           GAME POPULER
-        ====================================================== */}
-
-        <section
-          className="section"
-          id="games"
-        >
-
+        <section className="section" id="games">
           <div className="section-head">
-
             <div>
-
               <div className="section-kicker">
-
                 <Gamepad2 size={18} />
-
-                GAME POPULER
-
+                PILIH GAME FAVORITMU
               </div>
 
-
-              <h2>
-                Game favorit para gamer
-              </h2>
-
+              <h2>Game Populer</h2>
 
               <p>
-                Pilih game dan temukan produk top up
-                yang kamu butuhkan.
+                Pilih game untuk melihat produk top up yang tersedia.
               </p>
-
             </div>
-
 
             <button
-              className="outline-btn"
               type="button"
-              onClick={() =>
-                notify(
-                  'Katalog semua game akan segera tersedia.'
-                )
-              }
+              className="text-link"
+              onClick={() => {
+                setQuery('');
+                scrollToSection('games');
+              }}
             >
-
               Lihat Semua
-
-              <ArrowRight size={16} />
-
+              <ArrowRight size={17} />
             </button>
-
           </div>
 
-
-          <div className="game-grid">
-
-            {filteredGames.map(
-              (game) => (
-
-                <GameCard
-                  key={game.name}
-                  game={game}
-                  onClick={openGame}
-                />
-
-              )
-            )}
-
-          </div>
-
-
-          {filteredGames.length === 0 && (
-
-            <div className="empty">
-
-              Game tidak ditemukan.
-
-              <br />
-
-              Coba kata kunci lain.
-
+          {gamesLoading ? (
+            <div className="empty-state">
+              <RefreshCw size={24} />
+              <p>Memuat katalog game...</p>
             </div>
+          ) : (
+            <>
+              {databaseAvailable && (
+                <p className="catalog-note">
+                  <CheckCircle2 size={15} />
+                  Katalog game dimuat dari database.
+                </p>
+              )}
 
+              <div className="game-grid">
+                {filteredGames.map((game) => (
+                  <GameCard
+                    key={game.id || game.slug}
+                    game={{
+                      ...game,
+                      tone: game.tone || getTone(game),
+                      icon: game.icon_url || null,
+                      cover: game.cover_url || null
+                    }}
+                    onClick={() => openGame(game)}
+                  />
+                ))}
+              </div>
+
+              {filteredGames.length === 0 && (
+                <div className="empty-state">
+                  <Search size={28} />
+                  <h3>Game tidak ditemukan</h3>
+                  <p>
+                    Coba kata kunci lain atau hapus pencarian.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="outline-btn"
+                    onClick={() => setQuery('')}
+                  >
+                    Reset Pencarian
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
+          <button
+            type="button"
+            className="outline-btn refresh-catalog"
+            onClick={loadGames}
+            disabled={gamesLoading}
+          >
+            <RefreshCw size={16} />
+            Muat Ulang Katalog
+          </button>
         </section>
 
+        {/* KEUNGGULAN */}
 
-        {/* =====================================================
-           FEATURE
-        ====================================================== */}
+        <section className="section features-section" id="features">
+          <div className="section-head">
+            <div>
+              <div className="section-kicker">
+                <ShieldCheck size={18} />
+                KENAPA SAVIXARA
+              </div>
 
-        <section
-          className="section feature-section"
-        >
+              <h2>Pengalaman Gaming Lebih Praktis</h2>
+
+              <p>
+                Kami ingin membuat proses memilih produk lebih mudah
+                dan informatif.
+              </p>
+            </div>
+          </div>
 
           <div className="feature-grid">
+            {features.map((feature) => {
+              const Icon = feature.icon;
 
-            <FeatureCard
-              title="TOP UP GAME"
-              text="Proses cepat dan mudah"
-              cta="Top Up Sekarang"
-              tone="blue"
-              onClick={() =>
-                scrollToSection('games')
-              }
-            />
+              return (
+                <div
+                  className="feature-card"
+                  key={feature.title}
+                >
+                  <div className="feature-icon">
+                    <Icon size={24} />
+                  </div>
 
-
-            <FeatureCard
-              title="LAYANAN GAMING"
-              text="WDP, Joki Rank, Mabar Push"
-              cta="Lihat Layanan"
-              tone="purple"
-              onClick={() =>
-                scrollToSection('services')
-              }
-            />
-
-
-            <FeatureCard
-              title="VOUCHER"
-              text="Game Voucher & Gift Card"
-              cta="Lihat Voucher"
-              tone="cyan"
-              onClick={() =>
-                notify(
-                  'Katalog voucher akan segera dihubungkan.'
-                )
-              }
-            />
-
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </div>
+              );
+            })}
           </div>
-
         </section>
 
+        {/* PROMO */}
 
-        {/* =====================================================
-           PROMO
-        ====================================================== */}
-
-        <section
-          className="section"
-          id="promo"
-        >
-
+        <section className="section" id="promo">
           <div className="section-head">
-
             <div>
-
               <div className="section-kicker">
-
                 <Sparkles size={18} />
-
-                PROMO SPESIAL
-
+                PENAWARAN
               </div>
 
-
-              <h2>
-                Penawaran terbaik untuk kamu
-              </h2>
-
+              <h2>Promo Pilihan</h2>
 
               <p>
-                Promo dapat dikelola langsung
-                dari Admin Panel nantinya.
+                Nantinya promo dapat dikelola melalui database
+                dan panel admin.
               </p>
-
             </div>
-
-
-            <button
-              className="outline-btn"
-              type="button"
-              onClick={() =>
-                notify(
-                  'Semua promo akan tersedia setelah modul promo aktif.'
-                )
-              }
-            >
-
-              Semua Promo
-
-              <ArrowRight size={16} />
-
-            </button>
-
           </div>
-
 
           <div className="promo-grid">
+            {promos.map((promo) => (
+              <div
+                className={`promo-card ${promo.tone}`}
+                key={promo.title}
+              >
+                <span className="promo-label">
+                  SAVIXARA SPECIAL
+                </span>
 
-            {promos.map(
-              (promo) => (
+                <h3>{promo.title}</h3>
+                <p>{promo.text}</p>
 
-                <PromoCard
-                  key={promo.title}
-                  promo={promo}
-                  onClick={() =>
-                    notify(
-                      `${promo.title} dipilih.`
-                    )
-                  }
-                />
-
-              )
-            )}
-
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery(promo.title.replace('Promo ', ''));
+                    scrollToSection('games');
+                  }}
+                >
+                  Cari Game
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            ))}
           </div>
-
         </section>
 
+        {/* LAYANAN GAMING */}
 
-        {/* =====================================================
-           SERVICES
-        ====================================================== */}
-
-        <section
-          className="section"
-          id="services"
-        >
-
+        <section className="section" id="services">
           <div className="section-head">
-
             <div>
-
               <div className="section-kicker">
-
-                <Headphones size={18} />
-
+                <Trophy size={18} />
                 LAYANAN GAMING
-
               </div>
 
-
-              <h2>
-                Tingkatkan pengalaman bermainmu
-              </h2>
-
+              <h2>Lebih dari Sekadar Top Up</h2>
 
               <p>
-                Layanan gaming pilihan dengan alur
-                yang berbeda sesuai kebutuhan.
+                Pilihan layanan gaming yang direncanakan untuk SAVIXARA.
               </p>
-
             </div>
-
-
-            <button
-              className="outline-btn"
-              type="button"
-              onClick={() =>
-                notify(
-                  'Semua layanan akan tersedia setelah modul layanan aktif.'
-                )
-              }
-            >
-
-              Semua Layanan
-
-              <ArrowRight size={16} />
-
-            </button>
-
           </div>
-
 
           <div className="service-grid">
+            {services.map((service) => (
+              <div
+                className={`service-card ${service.tone}`}
+                key={service.name}
+              >
+                <div className="service-icon">
+                  <Gamepad2 size={25} />
+                </div>
 
-            {services.map(
-              (service) => (
+                <h3>{service.name}</h3>
+                <p>{service.sub}</p>
 
-                <ServiceCard
-                  key={service.name}
-                  service={service}
+                <button
+                  type="button"
                   onClick={() =>
                     notify(
-                      `${service.name} dipilih.`
+                      'Layanan ini belum tersedia untuk pemesanan.'
                     )
                   }
-                />
-
-              )
-            )}
-
+                >
+                  Pelajari Layanan
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            ))}
           </div>
-
         </section>
 
+        {/* INFO */}
 
-        {/* =====================================================
-           INFO
-        ====================================================== */}
+        <section className="section info-section" id="info">
+          <div className="section-head">
+            <div>
+              <div className="section-kicker">
+                <BookOpen size={18} />
+                INFORMASI
+              </div>
 
-        <section
-          className="section info-section"
-          id="articles"
-        >
+              <h2>Informasi SAVIXARA</h2>
 
-          <div className="info-card">
-
-            <BookOpen size={22} />
-
-            <h3>
-              Artikel & Berita Game
-            </h3>
-
-            <p>
-              Tempat untuk panduan top up,
-              tips gaming, informasi promo,
-              dan berita pilihan.
-            </p>
-
-            <button
-              type="button"
-              onClick={() =>
-                notify(
-                  'Halaman artikel akan dihubungkan ke CMS.'
-                )
-              }
-            >
-
-              Baca Artikel
-
-              <ArrowRight size={16} />
-
-            </button>
-
+              <p>
+                Informasi layanan akan disediakan secara bertahap.
+              </p>
+            </div>
           </div>
 
+          <div className="info-grid">
+            <article className="info-card">
+              <ShieldCheck size={25} />
+              <h3>Keamanan Transaksi</h3>
+              <p>
+                Informasi keamanan dan perlindungan data pengguna.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  notify('Halaman keamanan sedang dipersiapkan.')
+                }
+              >
+                Selengkapnya
+                <ArrowRight size={16} />
+              </button>
+            </article>
 
-          <div className="info-card">
+            <article className="info-card">
+              <ReceiptText size={25} />
+              <h3>Cek Transaksi</h3>
+              <p>
+                Fitur untuk memeriksa status pesanan akan disiapkan.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  notify('Fitur cek transaksi belum diaktifkan.')
+                }
+              >
+                Cek Status
+                <ArrowRight size={16} />
+              </button>
+            </article>
 
-            <ReceiptText size={22} />
-
-            <h3>
-              Cek Transaksi
-            </h3>
-
-            <p>
-              Masukkan Order ID untuk melihat
-              status pembayaran dan proses top up.
-            </p>
-
-            <button
-              type="button"
-              onClick={() =>
-                notify(
-                  'Fitur cek transaksi akan dihubungkan ke backend.'
-                )
-              }
-            >
-
-              Cek Transaksi
-
-              <ArrowRight size={16} />
-
-            </button>
-
+            <article className="info-card">
+              <BookOpen size={25} />
+              <h3>Panduan Top Up</h3>
+              <p>
+                Panduan memilih produk dan memasukkan data pemain.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  notify('Panduan top up sedang dipersiapkan.')
+                }
+              >
+                Baca Panduan
+                <ArrowRight size={16} />
+              </button>
+            </article>
           </div>
-
-
-          <div className="info-card">
-
-            <Trophy size={22} />
-
-            <h3>
-              Leaderboard
-            </h3>
-
-            <p>
-              Sistem loyalty dan leaderboard akan
-              dikembangkan setelah modul akun aktif.
-            </p>
-
-            <button
-              type="button"
-              onClick={() =>
-                notify(
-                  'Leaderboard akan dihubungkan ke backend.'
-                )
-              }
-            >
-
-              Lihat Leaderboard
-
-              <ArrowRight size={16} />
-
-            </button>
-
-          </div>
-
         </section>
 
+        {/* FAQ */}
 
-        {/* =====================================================
-           FAQ
-        ====================================================== */}
+        <section className="section faq-section" id="help">
+          <div className="faq-content">
+            <div className="section-kicker">
+              <HelpCircle size={18} />
+              PUSAT BANTUAN
+            </div>
 
-        <section className="faq section">
+            <h2>Punya pertanyaan?</h2>
 
-          <div className="section-kicker">
+            <p>
+              FAQ, cara top up, pembayaran, refund, dan Customer
+              Service akan tersedia dalam pusat bantuan SAVIXARA.
+            </p>
 
-            <HelpCircle size={18} />
+            <div className="faq-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  notify('Pusat bantuan sedang dipersiapkan.')
+                }
+              >
+                Buka Pusat Bantuan
+              </button>
 
-            BANTUAN
-
+              <button
+                className="whatsapp"
+                type="button"
+                onClick={() =>
+                  notify(
+                    'Nomor WhatsApp bisnis belum dikonfigurasi.'
+                  )
+                }
+              >
+                <MessageCircle size={18} />
+                Chat WhatsApp
+              </button>
+            </div>
           </div>
-
-
-          <h2>
-            Punya pertanyaan?
-          </h2>
-
-
-          <p>
-
-            FAQ, cara top up, pembayaran, refund,
-            dan Customer Service akan tersedia
-            dalam pusat bantuan SAVIXARA.
-
-          </p>
-
-
-          <div className="faq-actions">
-
-            <button
-              type="button"
-              onClick={() =>
-                notify(
-                  'Pusat bantuan akan segera tersedia.'
-                )
-              }
-            >
-
-              Buka Pusat Bantuan
-
-            </button>
-
-
-            <button
-              className="whatsapp"
-              type="button"
-              onClick={() =>
-                notify(
-                  'WhatsApp Customer Service akan dihubungkan setelah nomor bisnis tersedia.'
-                )
-              }
-            >
-
-              <MessageCircle size={18} />
-
-              Chat WhatsApp
-
-            </button>
-
-          </div>
-
         </section>
-
       </main>
-
 
       <Footer />
 
-
-      {/* =====================================================
-         FLOATING WHATSAPP
-      ====================================================== */}
+      {/* FLOATING WHATSAPP */}
 
       <button
         className="float-wa"
         type="button"
         onClick={() =>
-          notify(
-            'WhatsApp Customer Service akan dihubungkan setelah nomor bisnis tersedia.'
-          )
+          notify('Nomor WhatsApp bisnis belum dikonfigurasi.')
         }
         aria-label="WhatsApp Customer Service"
       >
-
         <MessageCircle size={24} />
-
       </button>
 
+      {/* TOAST */}
 
-      {/* =====================================================
-         TOAST
-      ====================================================== */}
-
-      {toast && (
-
-        <div className="toast">
-          {toast}
-        </div>
-
-      )}
-
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }
 
-
 export default Home;
-          
-
-                
+      
