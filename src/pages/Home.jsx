@@ -1177,7 +1177,7 @@ function Home() {
 </section>
       </main>
 
-      <Footer />
+      <Footer onNotify={notify} />
 
       {/* FLOATING WHATSAPP */}
 
