@@ -2103,3 +2103,44 @@ img {
   color: #00D9FF;
   flex-shrink: 0;
 }
+/* SAVIXARA - Rapikan status katalog game */
+#games .section-head {
+  margin-bottom: 18px;
+}
+
+#games .catalog-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 16px;
+  padding: 8px 11px;
+  border: 1px solid rgba(0, 217, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(0, 217, 255, 0.045);
+  color: #94A3B8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#games .catalog-note svg {
+  flex-shrink: 0;
+  color: #00D9FF;
+}
+
+#games .game-grid {
+  margin-top: 0;
+}
+
+@media (max-width: 430px) {
+  #games .section-head {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  #games .catalog-note {
+    margin-bottom: 14px;
+    font-size: 11px;
+  }
+}
