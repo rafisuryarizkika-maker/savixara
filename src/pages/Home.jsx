@@ -1109,47 +1109,77 @@ function Home() {
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* FAQ SAVIXARA */}
+<section className="section faq-section" id="help">
+  <div className="faq-content">
+    <div className="section-kicker">
+      <HelpCircle size={18} />
+      PUSAT BANTUAN
+    </div>
 
-        <section className="section faq-section" id="help">
-          <div className="faq-content">
-            <div className="section-kicker">
-              <HelpCircle size={18} />
-              PUSAT BANTUAN
-            </div>
+    <h2>Pertanyaan yang Sering Diajukan</h2>
 
-            <h2>Punya pertanyaan?</h2>
+    <p className="faq-intro">
+      Temukan informasi dasar tentang top up dan layanan SAVIXARA.
+    </p>
 
-            <p>
-              FAQ, cara top up, pembayaran, refund, dan Customer
-              Service akan tersedia dalam pusat bantuan SAVIXARA.
-            </p>
+    <div className="faq-list">
+      <details className="faq-item">
+        <summary>Bagaimana cara melakukan top up?</summary>
+        <p>
+          Pilih game dan nominal produk, lalu masukkan User ID
+          serta data pemain yang diminta. Saat ini, sistem checkout
+          dan pembayaran SAVIXARA belum aktif, sehingga pesanan
+          belum dapat diselesaikan melalui website.
+        </p>
+      </details>
 
-            <div className="faq-actions">
-              <button
-                type="button"
-                onClick={() =>
-                  notify('Pusat bantuan sedang dipersiapkan.')
-                }
-              >
-                Buka Pusat Bantuan
-              </button>
+      <details className="faq-item">
+        <summary>Di mana saya menemukan User ID dan Server ID?</summary>
+        <p>
+          Data tersebut biasanya dapat ditemukan di profil dalam
+          game. Pastikan datanya sesuai dengan akun tujuan.
+          Jangan pernah memberikan password akun game kepada siapa pun.
+        </p>
+      </details>
 
-              <button
-                className="whatsapp"
-                type="button"
-                onClick={() =>
-                  notify(
-                    'Nomor WhatsApp bisnis belum dikonfigurasi.'
-                  )
-                }
-              >
-                <MessageCircle size={18} />
-                Chat WhatsApp
-              </button>
-            </div>
-          </div>
-        </section>
+      <details className="faq-item">
+        <summary>Metode pembayaran apa yang tersedia?</summary>
+        <p>
+          Metode pembayaran belum tersedia karena sistem pembayaran
+          SAVIXARA masih dalam persiapan. Jangan melakukan transfer
+          berdasarkan instruksi yang belum terverifikasi.
+        </p>
+      </details>
+
+      <details className="faq-item">
+        <summary>Bagaimana cara mengecek status transaksi?</summary>
+        <p>
+          Fitur pengecekan transaksi belum diaktifkan. Tombol
+          Lanjutkan saat ini belum membuat pesanan sungguhan.
+        </p>
+      </details>
+
+      <details className="faq-item">
+        <summary>Bagaimana jika ingin mengajukan refund?</summary>
+        <p>
+          Kebijakan refund resmi akan diumumkan ketika sistem
+          transaksi SAVIXARA sudah tersedia. Pastikan status
+          pembayaran terkonfirmasi sebelum menganggap transaksi berhasil.
+        </p>
+      </details>
+
+      <details className="faq-item">
+        <summary>Bagaimana cara menghubungi Customer Service?</summary>
+        <p>
+          Kontak resmi Customer Service SAVIXARA masih disiapkan.
+          Informasi kontak akan ditampilkan setelah kanal bantuan
+          resmi tersedia.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
       </main>
 
       <Footer />
