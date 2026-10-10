@@ -40,11 +40,15 @@ export default function AuthModal({ onClose, onSuccess }) {
         onSuccess?.(data.user);
         onClose?.();
       } else {
-        const { data, error } =
-          await supabase.auth.signUp({
-            email: email.trim(),
-            password
-          });
+        
+const { data, error } = await supabase.auth.signUp({
+  email: email.trim(),
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`
+  }
+});
+        
 
         if (error) throw error;
 
