@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AuthModal from './AuthModal';
 import {
   Search,
   Menu,
@@ -11,6 +12,7 @@ const logoUrl = `${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`
 
 export default function Header() {
   const [drawer, setDrawer] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   const notify = (message) => {
     window.dispatchEvent(
@@ -119,11 +121,7 @@ export default function Header() {
           {/* LOGIN */}
           <button
             className="login-btn"
-            onClick={() =>
-              notify(
-                'Halaman login akan dihubungkan ke backend.'
-              )
-            }
+            onClick={() => setShowAuth(true)}
           >
             Masuk
           </button>
@@ -294,21 +292,29 @@ export default function Header() {
               <ChevronRight size={17} />
             </a>
 
-            {/* LOGIN / REGISTER */}
-            <button
-              className="drawer-login"
-              onClick={() =>
-                notify(
-                  'Halaman login akan dihubungkan ke backend.'
-                )
-              }
-            >
-              Masuk / Daftar
-            </button>
+            
+{/* LOGIN / REGISTER */}
+<button
+  className="drawer-login"
+  onClick={() => {
+    closeDrawer();
+    setShowAuth(true);
+  }}
+>
+  Masuk / Daftar
+</button>
+            
 
           </aside>
 
         </div>
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => {
+            notify('Login berhasil!');
+          }}
+        />
             )}
     </>
   );
