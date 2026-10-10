@@ -23,6 +23,7 @@ import {
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GameCard from '../components/GameCard';
+import Account from './Account';
 import { supabase } from '../supabase';
 
 /* =========================================================
@@ -227,6 +228,7 @@ const getTone = (game) => {
 function Home() {
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
+  const [showAccount, setShowAccount] = useState(false);
 
   const [games, setGames] = useState(fallbackGames);
   const [gamesLoading, setGamesLoading] = useState(true);
@@ -734,7 +736,13 @@ cover: localCovers[slug] || game.cover || game.icon || null
 
   return (
     <div className="app">
-      <Header />
+      <Header onOpenAccount={() => {
+  setShowAccount(true);
+}} />
+
+{showAccount && (
+  <Account onBack={() => setShowAccount(false)} />
+)}
 
       <main>
         {/* HERO */}
