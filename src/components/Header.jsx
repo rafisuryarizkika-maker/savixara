@@ -140,9 +140,12 @@ useEffect(() => {
           </button>
 
           
+
+
 {/* LOGIN / PROFIL AKUN */}
 {user ? (
   <button
+    type="button"
     className="login-btn"
     onClick={() => setShowProfile(!showProfile)}
   >
@@ -150,21 +153,34 @@ useEffect(() => {
   </button>
 ) : (
   <button
+    type="button"
     className="login-btn"
     onClick={() => setShowAuth(true)}
   >
     Masuk
   </button>
 )}
-          
+
 {user && showProfile && (
   <div className="profile-menu">
+    <div className="profile-heading">
+      <div className="profile-avatar">
+        {user.email?.charAt(0).toUpperCase() || 'A'}
+      </div>
+
+      <div className="profile-info">
+        <strong>Akun SAVIXARA</strong>
+        <span>Berhasil masuk</span>
+      </div>
+    </div>
+
     <div className="profile-email">
       {user.email}
     </div>
 
     <button
       type="button"
+      className="drawer-login"
       onClick={async () => {
         const { error } = await supabase.auth.signOut();
 
@@ -181,8 +197,9 @@ useEffect(() => {
     </button>
   </div>
 )}
+            
           
-          
+      
 
           {/* MOBILE MENU */}
           <button
