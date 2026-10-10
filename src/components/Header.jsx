@@ -352,9 +352,21 @@ useEffect(() => {
 
             
 
+
 {/* LOGIN / PROFIL DI MENU HP */}
 {user ? (
-  <>
+  <div className="profile-menu">
+    <div className="profile-heading">
+      <div className="profile-avatar">
+        {user.email?.charAt(0).toUpperCase() || 'A'}
+      </div>
+
+      <div className="profile-info">
+        <strong>Akun SAVIXARA</strong>
+        <span>Berhasil masuk</span>
+      </div>
+    </div>
+
     <div className="profile-email">
       {user.email}
     </div>
@@ -377,7 +389,7 @@ useEffect(() => {
     >
       Keluar
     </button>
-  </>
+  </div>
 ) : (
   <button
     className="drawer-login"
@@ -389,6 +401,7 @@ useEffect(() => {
     Masuk / Daftar
   </button>
 )}
+            
   
           
           
