@@ -2668,3 +2668,69 @@ img {
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+
+/* RAPikan profil akun di menu HP */
+.profile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 0 4px;
+}
+
+.profile-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 2px;
+}
+
+.profile-avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.profile-info strong {
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.profile-info span {
+  color: #aab5c6;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.profile-menu .profile-email {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-menu .drawer-login {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  margin-top: 2px;
+}
