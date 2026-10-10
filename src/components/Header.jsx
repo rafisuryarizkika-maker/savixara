@@ -351,16 +351,45 @@ useEffect(() => {
             </a>
 
             
-{/* LOGIN / REGISTER */}
-<button
-  className="drawer-login"
-  onClick={() => {
-    closeDrawer();
-    setShowAuth(true);
-  }}
->
-  Masuk / Daftar
-</button>
+
+{/* LOGIN / PROFIL DI MENU HP */}
+{user ? (
+  <>
+    <div className="profile-email">
+      {user.email}
+    </div>
+
+    <button
+      type="button"
+      className="drawer-login"
+      onClick={async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          notify('Gagal keluar dari akun.');
+          return;
+        }
+
+        setShowProfile(false);
+        closeDrawer();
+        notify('Berhasil keluar dari akun.');
+      }}
+    >
+      Keluar
+    </button>
+  </>
+) : (
+  <button
+    className="drawer-login"
+    onClick={() => {
+      closeDrawer();
+      setShowAuth(true);
+    }}
+  >
+    Masuk / Daftar
+  </button>
+)}
+  
           
           
           </aside>
