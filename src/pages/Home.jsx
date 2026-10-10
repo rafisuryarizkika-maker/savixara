@@ -740,11 +740,10 @@ cover: localCovers[slug] || game.cover || game.icon || null
   setShowAccount(true);
 }} />
 
-{showAccount && (
+{showAccount ? (
   <Account onBack={() => setShowAccount(false)} />
-)}
-
-      <main>
+) : (
+  <main>
         {/* HERO */}
 
         <section className="hero">
@@ -1223,6 +1222,10 @@ cover: localCovers[slug] || game.cover || game.icon || null
       {/* TOAST */}
 
       {toast && <div className="toast">{toast}</div>}
+</div>
+)}
+);
+  }
     </div>
   );
 }
