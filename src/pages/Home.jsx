@@ -741,9 +741,11 @@ cover: localCovers[slug] || game.cover || game.icon || null
 }} />
 
 {showAccount ? (
-  <Account onBack={() => setShowAccount(false)} />
+<Account onBack={() => setShowAccount(false)} />
 ) : (
+
   <main>
+    
         {/* HERO */}
 
         <section className="hero">
