@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import AuthModal from './AuthModal';
+import { supabase } from '../supabase';
+
 import {
   Search,
   Menu,
@@ -13,6 +16,24 @@ const logoUrl = `${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`
 export default function Header() {
   const [drawer, setDrawer] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  
+const [user, setUser] = useState(null);
+const [showProfile, setShowProfile] = useState(false);
+
+useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user ?? null);
+  });
+
+  const {
+    data: { subscription }
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
+  
 
   const notify = (message) => {
     window.dispatchEvent(
@@ -118,13 +139,50 @@ export default function Header() {
             <ShoppingCart size={19} />
           </button>
 
-          {/* LOGIN */}
-          <button
-            className="login-btn"
-            onClick={() => setShowAuth(true)}
-          >
-            Masuk
-          </button>
+          
+{/* LOGIN / PROFIL AKUN */}
+{user ? (
+  <button
+    className="login-btn"
+    onClick={() => setShowProfile(!showProfile)}
+  >
+    {user.email?.split('@')[0] || 'Akun Saya'}
+  </button>
+) : (
+  <button
+    className="login-btn"
+    onClick={() => setShowAuth(true)}
+  >
+    Masuk
+  </button>
+)}
+          
+{user && showProfile && (
+  <div className="profile-menu">
+    <div className="profile-email">
+      {user.email}
+    </div>
+
+    <button
+      type="button"
+      onClick={async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          notify('Gagal keluar dari akun.');
+          return;
+        }
+
+        setShowProfile(false);
+        notify('Berhasil keluar dari akun.');
+      }}
+    >
+      Keluar
+    </button>
+  </div>
+)}
+          
+          
 
           {/* MOBILE MENU */}
           <button
