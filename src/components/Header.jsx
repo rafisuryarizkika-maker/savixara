@@ -308,7 +308,7 @@ export default function Header() {
           </aside>
         </div>
       )}
-     )showAuth && (
+      {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}
           onSuccess={() => {
