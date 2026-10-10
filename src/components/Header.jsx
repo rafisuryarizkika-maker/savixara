@@ -303,11 +303,11 @@ export default function Header() {
 >
   Masuk / Daftar
 </button>
-            
-
+          
+          
           </aside>
-
         </div>
+      )}
       {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}
@@ -315,7 +315,7 @@ export default function Header() {
             notify('Login berhasil!');
           }}
         />
-            )}
+      )}
     </>
   );
 }
