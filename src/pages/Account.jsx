@@ -209,5 +209,5 @@ export default function Account({ onBack }) {
       </button>
     </main>
   );
-    }
+}
           
