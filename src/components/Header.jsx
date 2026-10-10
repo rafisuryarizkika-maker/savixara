@@ -13,7 +13,7 @@ import {
 
 const logoUrl = `${import.meta.env.BASE_URL}assets/logo/savixara-horizontal.svg`;
 
-export default function Header() {
+export default function Header({ onOpenAccount }) {
   const [drawer, setDrawer] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   
@@ -177,6 +177,17 @@ useEffect(() => {
     <div className="profile-email">
       {user.email}
     </div>
+    <button
+        type="button"
+        className="drawer-login"
+        onClick={() => {
+          setShowProfile(false);
+          setDrawer(false);
+          onOpenAccount?.();
+        }}
+      >
+        Lihat Halaman Akun
+      </button>
 
     <button
       type="button"
