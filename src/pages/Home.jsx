@@ -1206,7 +1206,7 @@ cover: localCovers[slug] || game.cover || game.icon || null
 </section>
       </main>
 
-      <Footer onNotify={notify} />
+      <Footer )={notify} />
 
       {/* FLOATING WHATSAPP */}
 
