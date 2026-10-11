@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 
 import {
@@ -38,8 +37,8 @@ const fallbackGames = [
     tag: 'MLBB',
     tone: 'mlbb',
     slug: 'mobile-legends',
-cover: '/savixara/images/games/mobile-legends.png',
-category: 'MOBA',
+    cover: '/savixara/images/games/mobile-legends.png',
+    category: 'MOBA',
     status: true
   },
   {
@@ -244,7 +243,6 @@ function Home() {
 
   const [toastTimer, setToastTimer] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
-  
 
   /* =======================================================
      TOAST
@@ -293,25 +291,25 @@ function Home() {
 
       if (Array.isArray(data) && data.length > 0) {
         const normalizedGames = data.map((game) => {
-const slug = game.slug || createSlug(game.name);
+          const slug = game.slug || createSlug(game.name);
 
-const localCovers = {
-'mobile-legends': '/savixara/images/games/mobile-legends.png',
-'free-fire': '/savixara/images/games/free-fire.png',
-'pubg-mobile': '/savixara/images/games/pubg-mobile.png',
-'roblox': '/savixara/images/games/roblox.png',
-'honor-of-kings': '/savixara/images/games/honor-of-kings.png',
-'genshin-impact': '/savixara/images/games/genshin-impact.png'
-};
+          const localCovers = {
+            'mobile-legends': '/savixara/images/games/mobile-legends.png',
+            'free-fire': '/savixara/images/games/free-fire.png',
+            'pubg-mobile': '/savixara/images/games/pubg-mobile.png',
+            roblox: '/savixara/images/games/roblox.png',
+            'honor-of-kings': '/savixara/images/games/honor-of-kings.png',
+            'genshin-impact': '/savixara/images/games/genshin-impact.png'
+          };
 
-return {
-...game,
-slug,
-tag: game.tag || game.name,
-tone: getTone(game),
-cover: localCovers[slug] || game.cover || game.icon || null
-};
-});
+          return {
+            ...game,
+            slug,
+            tag: game.tag || game.name,
+            tone: getTone(game),
+            cover: localCovers[slug] || game.cover || game.icon || null
+          };
+        });
 
         setGames(normalizedGames);
         setDatabaseAvailable(true);
@@ -843,8 +841,8 @@ cover: localCovers[slug] || game.cover || game.icon || null
             </div>
           </div>
         </section>
-
-        {/* GAME POPULER */}
+    
+    {/* GAME POPULER */}
 
         <section className="section" id="games">
           <div className="section-head">
@@ -934,7 +932,7 @@ cover: localCovers[slug] || game.cover || game.icon || null
           </button>
         </section>
 
-        {/* KEUNGGULAN */}
+    {/* KEUNGGULAN */}
 
         <section className="section features-section" id="features">
           <div className="section-head">
@@ -946,291 +944,529 @@ cover: localCovers[slug] || game.cover || game.icon || null
 
               <h2>Pengalaman Gaming Lebih Praktis</h2>
 
-              <p>
-                Kami ingin membuat proses memilih produk lebih mudah
-                dan informatif.
-              </p>
-            </div>
-          </div>
+                /* =========================================================
+     BERANDA
+  ========================================================= */
 
-          <div className="feature-grid">
-            {features.map((feature) => {
-              const Icon = feature.icon;
+  return (
+    <div className="app">
+      <Header
+        onOpenAccount={() => {
+          setShowAccount(true);
+        }}
+      />
 
-              return (
-                <div
-                  className="feature-card"
-                  key={feature.title}
-                >
-                  <div className="feature-icon">
-                    <Icon size={24} />
+      {showAccount ? (
+        <Account onBack={() => setShowAccount(false)} />
+      ) : (
+        <>
+          <main>
+
+            {/* HERO */}
+
+            <section className="hero">
+              <div className="hero-glow glow-a"></div>
+              <div className="hero-glow glow-b"></div>
+
+              <div className="hero-copy">
+                <div className="eyebrow">
+                  <Sparkles size={14} />
+                  PLATFORM GAMING
+                </div>
+
+                <h1>
+                  Top Up Game
+                  <br />
+                  Jadi Lebih <span>Mudah</span>
+                </h1>
+
+                <p>
+                  Top up game, voucher, dan layanan gaming
+                  dalam satu tempat. Pilih game favoritmu
+                  dan lihat katalog produk SAVIXARA.
+                </p>
+
+                <div className="search-box">
+                  <Search size={20} />
+
+                  <input
+                    id="search"
+                    type="search"
+                    value={query}
+                    onChange={(event) =>
+                      setQuery(event.target.value)
+                    }
+                    placeholder="Cari game, layanan, atau voucher..."
+                    aria-label="Cari game"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('games')}
+                    aria-label="Cari"
+                  >
+                    <Search size={18} />
+                  </button>
+                </div>
+
+                <div className="trust-row">
+                  <div>
+                    <Zap size={18} />
+                    <span>
+                      <b>Proses Cepat</b>
+                      <small>Informasi pesanan jelas</small>
+                    </span>
                   </div>
 
-                  <h3>{feature.title}</h3>
-                  <p>{feature.text}</p>
+                  <div>
+                    <WalletCards size={18} />
+                    <span>
+                      <b>Harga Kompetitif</b>
+                      <small>Harga dari katalog</small>
+                    </span>
+                  </div>
+
+                  <div>
+                    <ShieldCheck size={18} />
+                    <span>
+                      <b>Transaksi Aman</b>
+                      <small>Utamakan keamanan</small>
+                    </span>
+                  </div>
+
+                  <div>
+                    <Headphones size={18} />
+                    <span>
+                      <b>Customer Support</b>
+                      <small>Pusat bantuan</small>
+                    </span>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* PROMO */}
-
-        <section className="section" id="promo">
-          <div className="section-head">
-            <div>
-              <div className="section-kicker">
-                <Sparkles size={18} />
-                PENAWARAN
               </div>
 
-              <h2>Promo Pilihan</h2>
+              <div className="hero-art">
+                <div className="orb orb-1"></div>
+                <div className="orb orb-2"></div>
 
-              <p>
-                Nantinya promo dapat dikelola melalui database
-                dan panel admin.
-              </p>
-            </div>
-          </div>
+                <div className="character-placeholder">
+                  <div className="character-ring"></div>
+                  <div className="character-core">S</div>
+                </div>
 
-          <div className="promo-grid">
-            {promos.map((promo) => (
-              <div
-                className={`promo-card ${promo.tone}`}
-                key={promo.title}
-              >
-                <span className="promo-label">
-                  SAVIXARA SPECIAL
-                </span>
-
-                <h3>{promo.title}</h3>
-                <p>{promo.text}</p>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery(promo.title.replace('Promo ', ''));
-                    scrollToSection('games');
-                  }}
-                >
-                  Cari Game
-                  <ArrowRight size={16} />
-                </button>
+                <div className="hero-chip chip-1">TOP UP</div>
+                <div className="hero-chip chip-2">
+                  FAST • SECURE
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
 
-        {/* LAYANAN GAMING */}
+                        {/* =========================================================
+                GAME POPULER
+            ========================================================= */}
 
-        <section className="section" id="services">
-          <div className="section-head">
-            <div>
-              <div className="section-kicker">
-                <Trophy size={18} />
+            <section className="section games-section" id="games">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">PILIH GAME FAVORITMU</span>
+                  <h2>Game Populer</h2>
+                  <p>
+                    Top up game favoritmu dengan proses mudah dan cepat.
+                  </p>
+                </div>
+              </div>
+
+              <div className="games-grid">
+                {games.map((game) => (
+                  <button
+                    type="button"
+                    className="game-card"
+                    key={game.id}
+                    onClick={() => setSelectedGame(game)}
+                  >
+                    <div className="game-image">
+                      <img
+                        src={game.image}
+                        alt={game.name}
+                        loading="lazy"
+                      />
+                    </div>
+
+                    <div className="game-info">
+                      <h3>{game.name}</h3>
+                      <p>{game.category || "Top Up Game"}</p>
+                    </div>
+
+                    <span className="game-arrow">
+                      <ArrowUpRight size={18} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+                        {/* =========================================================
+                KEUNGGULAN SAVIXARA
+            ========================================================= */}
+
+            <section className="section features-section" id="keunggulan">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">
+                    KENAPA MEMILIH KAMI?
+                  </span>
+                  <h2>Kenapa SAVIXARA?</h2>
+                  <p>
+                    Pengalaman top up game yang praktis, nyaman, dan tepercaya.
+                  </p>
+                </div>
+              </div>
+
+              <div className="features-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <Zap size={24} />
+                  </div>
+                  <h3>Proses Cepat</h3>
+                  <p>
+                    Proses transaksi dirancang agar praktis dan mudah diikuti.
+                  </p>
+                </div>
+
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <Tag size={24} />
+                  </div>
+                  <h3>Harga Kompetitif</h3>
+                  <p>
+                    Temukan pilihan produk game dengan harga yang bersaing.
+                  </p>
+                </div>
+
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <h3>Transaksi Aman</h3>
+                  <p>
+                    Informasi transaksi ditampilkan dengan jelas untuk
+                    membantu kamu bertransaksi dengan lebih nyaman.
+                  </p>
+                </div>
+
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <Headphones size={24} />
+                  </div>
+                  <h3>Customer Support</h3>
+                  <p>
+                    Hubungi layanan pelanggan jika kamu membutuhkan bantuan.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+                        {/* =========================================================
+                PROMO SAVIXARA
+            ========================================================= */}
+
+            <section className="section promo-section" id="promo">
+              <div className="promo-banner">
+                <div className="promo-content">
+                  <span className="section-eyebrow">
+                    PENAWARAN SPESIAL
+                  </span>
+
+                  <h2>
+                    Makin Seru Main Game,
+                    <br />
+                    Makin Mudah Top Up!
+                  </h2>
+
+                  <p>
+                    Temukan berbagai pilihan produk dan promo menarik
+                    di SAVIXARA.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => {
+                      document
+                        .getElementById("games")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    Jelajahi Game
+                    <ArrowUpRight size={18} />
+                  </button>
+                </div>
+
+                <div className="promo-visual">
+                  <div className="promo-glow"></div>
+
+                  <div className="promo-controller">
+                    <Gamepad2 size={100} strokeWidth={1.3} />
+                  </div>
+
+                  <span className="promo-spark promo-spark-one">✦</span>
+                  <span className="promo-spark promo-spark-two">✧</span>
+                </div>
+              </div>
+            </section>
+
+                        {/* =========================================================
                 LAYANAN GAMING
+            ========================================================= */}
+
+            <section className="section services-section" id="layanan">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">
+                    LEBIH DARI SEKADAR TOP UP
+                  </span>
+                  <h2>Layanan Gaming</h2>
+                  <p>
+                    Pilihan layanan untuk menemani pengalaman bermain game kamu.
+                  </p>
+                </div>
               </div>
 
-              <h2>Lebih dari Sekadar Top Up</h2>
+              <div className="services-grid">
+                <div className="service-card">
+                  <div className="service-icon">
+                    <Gem size={28} />
+                  </div>
 
-              <p>
-                Pilihan layanan gaming yang direncanakan untuk SAVIXARA.
-              </p>
-            </div>
-          </div>
+                  <span className="service-label">MOBILE LEGENDS</span>
+                  <h3>Weekly Diamond Pass</h3>
+                  <p>
+                    Pilihan layanan WDP untuk pemain Mobile Legends.
+                  </p>
 
-          <div className="service-grid">
-            {services.map((service) => (
-              <div
-                className={`service-card ${service.tone}`}
-                key={service.name}
-              >
-                <div className="service-icon">
-                  <Gamepad2 size={25} />
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => notify("Layanan WDP segera tersedia.")}
+                  >
+                    Lihat Layanan
+                    <ArrowUpRight size={16} />
+                  </button>
                 </div>
 
-                <h3>{service.name}</h3>
-                <p>{service.sub}</p>
+                <div className="service-card">
+                  <div className="service-icon">
+                    <Trophy size={28} />
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    notify(
-                      'Layanan ini belum tersedia untuk pemesanan.'
-                    )
-                  }
-                >
-                  Pelajari Layanan
-                  <ArrowRight size={16} />
-                </button>
+                  <span className="service-label">MOBILE LEGENDS</span>
+                  <h3>Joki Rank</h3>
+                  <p>
+                    Informasi layanan bantuan push rank Mobile Legends.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => notify("Layanan Joki Rank segera tersedia.")}
+                  >
+                    Lihat Layanan
+                    <ArrowUpRight size={16} />
+                  </button>
+                </div>
+
+                <div className="service-card">
+                  <div className="service-icon">
+                    <Users size={28} />
+                  </div>
+
+                  <span className="service-label">MABAR BARENG</span>
+                  <h3>Mabar Push Rank</h3>
+                  <p>
+                    Temukan layanan mabar untuk bermain bersama.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => notify("Layanan Mabar segera tersedia.")}
+                  >
+                    Lihat Layanan
+                    <ArrowUpRight size={16} />
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
 
-        {/* INFO */}
+                        {/* =========================================================
+                INFORMASI SAVIXARA
+            ========================================================= */}
 
-        <section className="section info-section" id="info">
-          <div className="section-head">
-            <div>
-              <div className="section-kicker">
-                <BookOpen size={18} />
-                INFORMASI
+            <section className="section info-section" id="informasi">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">
+                    KENALI SAVIXARA
+                  </span>
+                  <h2>Informasi SAVIXARA</h2>
+                  <p>
+                    Kenali layanan, komitmen, dan dukungan yang kami sediakan.
+                  </p>
+                </div>
               </div>
 
-              <h2>Informasi SAVIXARA</h2>
+              <div className="info-grid">
+                <div className="info-card">
+                  <div className="info-icon">
+                    <Info size={24} />
+                  </div>
+                  <h3>Tentang SAVIXARA</h3>
+                  <p>
+                    SAVIXARA adalah platform yang dirancang untuk membantu
+                    pemain menemukan pilihan produk dan layanan game dalam
+                    satu tempat.
+                  </p>
+                </div>
 
-              <p>
-                Informasi layanan akan disediakan secara bertahap.
-              </p>
-            </div>
-          </div>
+                <div className="info-card">
+                  <div className="info-icon">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <h3>Keamanan Transaksi</h3>
+                  <p>
+                    Kami mengutamakan kejelasan informasi produk dan proses
+                    transaksi agar pelanggan dapat berbelanja dengan nyaman.
+                  </p>
+                </div>
 
-          <div className="info-grid">
-            <article className="info-card">
-              <ShieldCheck size={25} />
-              <h3>Keamanan Transaksi</h3>
-              <p>
-                Informasi keamanan dan perlindungan data pengguna.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  notify('Halaman keamanan sedang dipersiapkan.')
-                }
-              >
-                Selengkapnya
-                <ArrowRight size={16} />
-              </button>
-            </article>
+                <div className="info-card">
+                  <div className="info-icon">
+                    <Headphones size={24} />
+                  </div>
+                  <h3>Dukungan Pelanggan</h3>
+                  <p>
+                    Hubungi customer support jika kamu memiliki pertanyaan
+                    mengenai produk atau transaksi.
+                  </p>
+                </div>
 
-            <article className="info-card">
-              <ReceiptText size={25} />
-              <h3>Cek Transaksi</h3>
-              <p>
-                Fitur untuk memeriksa status pesanan akan disiapkan.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  notify('Fitur cek transaksi belum diaktifkan.')
-                }
-              >
-                Cek Status
-                <ArrowRight size={16} />
-              </button>
-            </article>
+                <div className="info-card">
+                  <div className="info-icon">
+                    <Globe size={24} />
+                  </div>
+                  <h3>Layanan Game</h3>
+                  <p>
+                    Temukan berbagai kategori game dan layanan gaming yang
+                    tersedia di SAVIXARA.
+                  </p>
+                </div>
+              </div>
+            </section>
 
-            <article className="info-card">
-              <BookOpen size={25} />
-              <h3>Panduan Top Up</h3>
-              <p>
-                Panduan memilih produk dan memasukkan data pemain.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  notify('Panduan top up sedang dipersiapkan.')
-                }
-              >
-                Baca Panduan
-                <ArrowRight size={16} />
-              </button>
-            </article>
-          </div>
-        </section>
+            
+            {/* =========================================================
+                FAQ - PERTANYAAN YANG SERING DITANYAKAN
+            ========================================================= */}
 
-        {/* FAQ SAVIXARA */}
-<section className="section faq-section" id="help">
-  <div className="faq-content">
-    <div className="section-kicker">
-      <HelpCircle size={18} />
-      PUSAT BANTUAN
-    </div>
+            <section className="section faq-section" id="faq">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">
+                    BUTUH BANTUAN?
+                  </span>
+                  <h2>Pertanyaan yang Sering Ditanyakan</h2>
+                  <p>
+                    Temukan jawaban untuk pertanyaan umum tentang SAVIXARA.
+                  </p>
+                </div>
+              </div>
 
-    <h2>Pertanyaan yang Sering Diajukan</h2>
+              <div className="faq-list">
+                <details className="faq-item">
+                  <summary>
+                    Apa itu SAVIXARA?
+                    <span className="faq-toggle">+</span>
+                  </summary>
+                  <p>
+                    SAVIXARA adalah platform yang menyediakan informasi
+                    produk dan layanan game untuk membantu pemain menemukan
+                    pilihan yang sesuai.
+                  </p>
+                </details>
 
-    <p className="faq-intro">
-      Temukan informasi dasar tentang top up dan layanan SAVIXARA.
-    </p>
+                <details className="faq-item">
+                  <summary>
+                    Bagaimana cara melakukan top up?
+                    <span className="faq-toggle">+</span>
+                  </summary>
+                  <p>
+                    Pilih game yang kamu inginkan, periksa produk yang
+                    tersedia, lalu ikuti petunjuk transaksi yang ditampilkan
+                    pada platform.
+                  </p>
+                </details>
 
-    <div className="faq-list">
-  {[
-    {
-      question: 'Bagaimana cara melakukan top up?',
-      answer: 'Pilih game dan nominal produk, lalu masukkan User ID serta data pemain yang diminta. Saat ini sistem checkout dan pembayaran SAVIXARA belum aktif.'
-    },
-    {
-      question: 'Di mana saya menemukan User ID dan Server ID?',
-      answer: 'Data tersebut biasanya tersedia di profil dalam game. Pastikan datanya sesuai dengan akun tujuan dan jangan pernah memberikan password akun game kepada siapa pun.'
-    },
-    {
-      question: 'Metode pembayaran apa yang tersedia?',
-      answer: 'Metode pembayaran SAVIXARA masih dalam persiapan. Jangan melakukan transfer berdasarkan instruksi yang belum terverifikasi.'
-    },
-    {
-      question: 'Bagaimana cara mengecek status transaksi?',
-      answer: 'Fitur pengecekan transaksi belum diaktifkan. Tombol Lanjutkan saat ini belum membuat pesanan sungguhan.'
-    },
-    {
-      question: 'Bagaimana jika ingin mengajukan refund?',
-      answer: 'Kebijakan refund resmi akan diumumkan ketika sistem transaksi SAVIXARA sudah tersedia.'
-    },
-    {
-      question: 'Bagaimana cara menghubungi Customer Service?',
-      answer: 'Kontak resmi Customer Service SAVIXARA masih disiapkan dan akan ditampilkan setelah kanal bantuan resmi tersedia.'
-    }
-  ].map((faq, index) => (
-    <div className="faq-item" key={faq.question}>
-      <button
-        type="button"
-        className="faq-question"
-        aria-expanded={openFaq === index}
-        onClick={() =>
-          setOpenFaq(openFaq === index ? null : index)
-        }
-      >
-        <span>{faq.question}</span>
-        <span className="faq-icon">
-          {openFaq === index ? '−' : '+'}
-        </span>
-      </button>
+                <details className="faq-item">
+                  <summary>
+                    Apakah pembayaran saya aman?
+                    <span className="faq-toggle">+</span>
+                  </summary>
+                  <p>
+                    Selalu periksa detail pesanan dan metode pembayaran
+                    sebelum menyelesaikan transaksi. Gunakan metode pembayaran
+                    resmi yang tersedia dan jangan membagikan kata sandi akun
+                    game kepada siapa pun.
+                  </p>
+                </details>
 
-      {openFaq === index && (
-        <p className="faq-answer">{faq.answer}</p>
+                <details className="faq-item">
+                  <summary>
+                    Bagaimana cara menghubungi customer service?
+                    <span className="faq-toggle">+</span>
+                  </summary>
+                  <p>
+                    Kamu dapat menghubungi customer service melalui tombol
+                    WhatsApp yang tersedia di website.
+                  </p>
+                </details>
+
+                <details className="faq-item">
+                  <summary>
+                    Apakah semua layanan tersedia setiap saat?
+                    <span className="faq-toggle">+</span>
+                  </summary>
+                  <p>
+                    Ketersediaan produk dan layanan dapat berbeda. Periksa
+                    informasi pada halaman produk atau hubungi customer
+                    service untuk mendapatkan kepastian.
+                  </p>
+                </details>
+              </div>
+            </section>
+            
+          </main>
+
+          {/* FOOTER */}
+          <Footer onNotify={notify} />
+
+          {/* FLOATING WHATSAPP */}
+          <a
+            className="float-wa"
+            href="https://wa.me/6285795191215"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp Customer Service"
+          >
+            <MessageCircle size={24} />
+          </a>
+
+          {/* TOAST NOTIFICATION */}
+          {toast && <div className="toast">{toast}</div>}
+        </>
       )}
-    </div>
-  ))}
-</div>
-  </div>
-</section>
-      </main>
-
-      <Footer onNotify={notify} />
-
-      {/* FLOATING WHATSAPP */}
-
-      
-<a
-  className="float-wa"
-  href="https://wa.me/6285795191215"
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="WhatsApp Customer Service"
->
-  <MessageCircle size={24} />
-</a>
-      
-      {/* TOAST */}
-
-      {toast && <div className="toast">{toast}</div>}
-</div>
-)}
-);
-  }
     </div>
   );
 }
 
 export default Home;
-      
+            
+    
