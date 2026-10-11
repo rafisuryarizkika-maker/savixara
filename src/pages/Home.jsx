@@ -741,7 +741,7 @@ function Home() {
 {showAccount ? (
 <Account onBack={() => setShowAccount(false)} />
 ) : (
-
+ <>
   <main>
     
         {/* HERO */}
