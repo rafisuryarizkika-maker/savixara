@@ -943,13 +943,6 @@ function Home() {
               </div>
 
               <h2>Pengalaman Gaming Lebih Praktis</h2>
-
-                /* =========================================================
-     BERANDA
-  ========================================================= */
-
-  return (
-    <div className="app">
       <Header
         onOpenAccount={() => {
           setShowAccount(true);
