@@ -19,20 +19,44 @@ export default function Header({ onOpenAccount }) {
   
 const [user, setUser] = useState(null);
 const [showProfile, setShowProfile] = useState(false);
+const [isAdmin, setIsAdmin] = useState(false);
 
 useEffect(() => {
+  let active = true;
+
+  async function checkUser(user) {
+    if (!user) {
+      if (active) setIsAdmin(false);
+      return;
+    }
+
+    const { data, error } = await supabase.rpc('is_admin');
+
+    if (active) {
+      setIsAdmin(!error && data === true);
+    }
+  }
+
   supabase.auth.getUser().then(({ data }) => {
+    if (!active) return;
     setUser(data.user ?? null);
+    checkUser(data.user ?? null);
   });
 
   const {
-    data: { subscription }
+    data: { subscription },
   } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user ?? null);
+    const currentUser = session?.user ?? null;
+    setUser(currentUser);
+    checkUser(currentUser);
   });
 
-  return () => subscription.unsubscribe();
+  return () => {
+    active = false;
+    subscription.unsubscribe();
+  };
 }, []);
+  
   
 
   const notify = (message) => {
@@ -177,6 +201,23 @@ useEffect(() => {
     <div className="profile-email">
       {user.email}
     </div>
+    
+{isAdmin && (
+  <button
+    type="button"
+    className="drawer-login"
+    onClick={() => {
+      setShowProfile(false);
+      setDrawer(false);
+      window.dispatchEvent(
+        new CustomEvent('savixara-open-admin')
+      );
+    }}
+  >
+    Panel Admin
+  </button>
+)}
+    
     <button
         type="button"
         className="drawer-login"
