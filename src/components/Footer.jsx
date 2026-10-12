@@ -162,14 +162,20 @@ function Footer({ onNotify }) {
 
       const questions = section.querySelectorAll('details.faq-item');
 
-      const match = Array.from(questions).find((detail) => {
-        const summary =
-          detail.querySelector('summary')?.textContent?.toLowerCase() || '';
+      
+const match = Array.from(questions).find((detail) => {
+  const summary =
+    detail.querySelector('summary')?.textContent?.toLowerCase() || '';
 
-        return keywords[item].some((keyword) =>
-          summary.includes(keyword)
-        );
-      });
+  if (item === 'Refund') {
+    return summary.includes('refund');
+  }
+
+  return keywords[item].some((keyword) =>
+    summary.includes(keyword)
+  );
+});
+      
 
       if (match) {
         match.open = true;
