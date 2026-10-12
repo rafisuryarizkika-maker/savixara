@@ -32,6 +32,10 @@ useEffect(() => {
 
     const { data, error } = await supabase.rpc('is_admin');
     console.log('Admin check:', { data, error });
+    window.alert(
+  'Admin check: ' +
+  JSON.stringify({ data, error })
+);
 
     if (active) {
       setIsAdmin(!error && data === true);
