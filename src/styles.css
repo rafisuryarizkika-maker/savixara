@@ -1103,6 +1103,37 @@ img {
   background: #0F766E;
 }
 
+
+/* FAQ - ikon plus dan minus */
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-toggle {
+  flex-shrink: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.faq-item[open] .faq-toggle {
+  font-size: 0;
+}
+
+.faq-item[open] .faq-toggle::after {
+  content: "−";
+  font-size: 22px;
+}
+
 /* =====================================================
    FOOTER
 ===================================================== */
