@@ -2734,3 +2734,34 @@ img {
   box-sizing: border-box;
   margin-top: 2px;
 }
+/* Perbaikan tombol Jelajahi Game di bagian promo */
+.promo-content .btn-primary {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding: 12px 18px;
+min-height: 48px;
+border: none;
+border-radius: 12px;
+background: var(--gradient);
+color: #ffffff;
+font-size: 15px;
+font-weight: 600;
+line-height: 1.4;
+white-space: nowrap;
+cursor: pointer;
+}
+
+.promo-content .btn-primary svg {
+flex-shrink: 0;
+width: 18px;
+height: 18px;
+}
+
+@media (max-width: 480px) {
+.promo-content .btn-primary {
+padding: 11px 16px;
+font-size: 14px;
+}
+}
