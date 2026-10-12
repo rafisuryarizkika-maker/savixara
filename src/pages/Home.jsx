@@ -235,6 +235,22 @@ function Home() {
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
   const [showAccount, setShowAccount] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  
+useEffect(() => {
+  const openAdmin = () => {
+    setShowAccount(false);
+    setShowAdmin(true);
+  };
+
+  window.addEventListener('savixara-open-admin', openAdmin);
+
+  return () => {
+    window.removeEventListener('savixara-open-admin', openAdmin);
+  };
+}, []);
+  
+  
 
   const [games, setGames] = useState(fallbackGames);
   const [gamesLoading, setGamesLoading] = useState(true);
@@ -745,10 +761,14 @@ function Home() {
       setShowAccount(true);
 }} />
 
-{showAccount ? (
-<Account onBack={() => setShowAccount(false)} />
+
+{showAdmin ? (
+  <Admin onBack={() => setShowAdmin(false)} />
+) : showAccount ? (
+  <Account onBack={() => setShowAccount(false)} />
 ) : (
- <>
+  <>
+    
   <main>
     
         {/* HERO */}
