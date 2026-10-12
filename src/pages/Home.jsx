@@ -16,7 +16,13 @@ import {
   HelpCircle,
   MessageCircle,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  ArrowUpRight,
+  Gem,
+  Globe,
+  Info,
+  Tag,
+  Users
 } from 'lucide-react';
 
 import Header from '../components/Header';
@@ -735,7 +741,7 @@ function Home() {
   return (
     <div className="app">
       <Header onOpenAccount={() => {
-  setShowAccount(true);
+      setShowAccount(true);
 }} />
 
 {showAccount ? (
@@ -857,7 +863,7 @@ function Home() {
               <p>
                 Pilih game untuk melihat produk top up yang tersedia.
               </p>
-            </div>
+              </div>
 
             <button
               type="button"
@@ -932,171 +938,6 @@ function Home() {
           </button>
         </section>
 
-    {/* KEUNGGULAN */}
-
-        <section className="section features-section" id="features">
-          <div className="section-head">
-            <div>
-              <div className="section-kicker">
-                <ShieldCheck size={18} />
-                KENAPA SAVIXARA
-              </div>
-
-              <h2>Pengalaman Gaming Lebih Praktis</h2>
-      <Header
-        onOpenAccount={() => {
-          setShowAccount(true);
-        }}
-      />
-
-      {showAccount ? (
-        <Account onBack={() => setShowAccount(false)} />
-      ) : (
-        <>
-          <main>
-
-            {/* HERO */}
-
-            <section className="hero">
-              <div className="hero-glow glow-a"></div>
-              <div className="hero-glow glow-b"></div>
-
-              <div className="hero-copy">
-                <div className="eyebrow">
-                  <Sparkles size={14} />
-                  PLATFORM GAMING
-                </div>
-
-                <h1>
-                  Top Up Game
-                  <br />
-                  Jadi Lebih <span>Mudah</span>
-                </h1>
-
-                <p>
-                  Top up game, voucher, dan layanan gaming
-                  dalam satu tempat. Pilih game favoritmu
-                  dan lihat katalog produk SAVIXARA.
-                </p>
-
-                <div className="search-box">
-                  <Search size={20} />
-
-                  <input
-                    id="search"
-                    type="search"
-                    value={query}
-                    onChange={(event) =>
-                      setQuery(event.target.value)
-                    }
-                    placeholder="Cari game, layanan, atau voucher..."
-                    aria-label="Cari game"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection('games')}
-                    aria-label="Cari"
-                  >
-                    <Search size={18} />
-                  </button>
-                </div>
-
-                <div className="trust-row">
-                  <div>
-                    <Zap size={18} />
-                    <span>
-                      <b>Proses Cepat</b>
-                      <small>Informasi pesanan jelas</small>
-                    </span>
-                  </div>
-
-                  <div>
-                    <WalletCards size={18} />
-                    <span>
-                      <b>Harga Kompetitif</b>
-                      <small>Harga dari katalog</small>
-                    </span>
-                  </div>
-
-                  <div>
-                    <ShieldCheck size={18} />
-                    <span>
-                      <b>Transaksi Aman</b>
-                      <small>Utamakan keamanan</small>
-                    </span>
-                  </div>
-
-                  <div>
-                    <Headphones size={18} />
-                    <span>
-                      <b>Customer Support</b>
-                      <small>Pusat bantuan</small>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="hero-art">
-                <div className="orb orb-1"></div>
-                <div className="orb orb-2"></div>
-
-                <div className="character-placeholder">
-                  <div className="character-ring"></div>
-                  <div className="character-core">S</div>
-                </div>
-
-                <div className="hero-chip chip-1">TOP UP</div>
-                <div className="hero-chip chip-2">
-                  FAST • SECURE
-                </div>
-              </div>
-            </section>
-
-                        {/* =========================================================
-                GAME POPULER
-            ========================================================= */}
-
-            <section className="section games-section" id="games">
-              <div className="section-heading">
-                <div>
-                  <span className="section-eyebrow">PILIH GAME FAVORITMU</span>
-                  <h2>Game Populer</h2>
-                  <p>
-                    Top up game favoritmu dengan proses mudah dan cepat.
-                  </p>
-                </div>
-              </div>
-
-              <div className="games-grid">
-                {games.map((game) => (
-                  <button
-                    type="button"
-                    className="game-card"
-                    key={game.id}
-                    onClick={() => setSelectedGame(game)}
-                  >
-                    <div className="game-image">
-                      <img
-                        src={game.image}
-                        alt={game.name}
-                        loading="lazy"
-                      />
-                    </div>
-
-                    <div className="game-info">
-                      <h3>{game.name}</h3>
-                      <p>{game.category || "Top Up Game"}</p>
-                    </div>
-
-                    <span className="game-arrow">
-                      <ArrowUpRight size={18} />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
                         {/* =========================================================
                 KEUNGGULAN SAVIXARA
             ========================================================= */}
@@ -1160,7 +1001,7 @@ function Home() {
 
                         {/* =========================================================
                 PROMO SAVIXARA
-            ========================================================= */}
+                          ========================================================= */}
 
             <section className="section promo-section" id="promo">
               <div className="promo-banner">
@@ -1305,7 +1146,7 @@ function Home() {
                     Kenali layanan, komitmen, dan dukungan yang kami sediakan.
                   </p>
                 </div>
-              </div>
+                </div>
 
               <div className="info-grid">
                 <div className="info-card">
@@ -1462,4 +1303,4 @@ function Home() {
 
 export default Home;
             
-    
+
