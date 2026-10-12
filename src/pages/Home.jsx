@@ -1274,6 +1274,23 @@ function Home() {
                     service untuk mendapatkan kepastian.
                   </p>
                 </details>
+
+                
+<details className="faq-item">
+  <summary>
+    Bagaimana kebijakan refund di SAVIXARA?
+    <span className="faq-toggle">+</span>
+  </summary>
+  <p>
+    Pengajuan refund akan ditinjau berdasarkan status transaksi
+    dan ketentuan layanan yang berlaku. Jika transaksi mengalami
+    kendala, silakan hubungi Customer Service SAVIXARA melalui
+    WhatsApp dengan menyertakan informasi transaksi agar dapat
+    diperiksa lebih lanjut. Refund tidak dijamin untuk setiap
+    transaksi dan mengikuti hasil pemeriksaan.
+  </p>
+</details>
+
               </div>
             </section>
             
