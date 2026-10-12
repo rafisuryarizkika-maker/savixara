@@ -58,104 +58,137 @@ const footerColumns = [
 
 const WHATSAPP_NUMBER = "6285795191215";
 function Footer({ onNotify }) {
+  
   const handleClick = (item) => {
-    if (item === 'Top Up Games') {
-  window.location.href = `${window.location.pathname}#games`;
-  return;
-    }
-    
-if (item === 'Beranda') {
-  window.location.href = window.location.pathname;
-  return;
-}
-    
-if (item === 'Voucher') {
-  if (onNotify) {
-    onNotify('Katalog voucher sedang disiapkan.');
-  }
-  return;
-}
+    const scrollTo = (ids) => {
+      const target = ids
+        .map((id) => document.getElementById(id))
+        .find(Boolean);
 
-if (item === 'Layanan Gaming') {
-  document.getElementById('services')?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
-  return;
-}
-    
-  const faqIndex = {
-    'Cara Top Up': 0,
-    'Cara Pembayaran': 2,
-    'Refund': 4,
-  };
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        return true;
+      }
 
-  const isFaqLink =
-    item === 'FAQ' ||
-    item === 'Pusat Bantuan' ||
-    Object.prototype.hasOwnProperty.call(faqIndex, item);
-    
-if (item === 'Hubungi Kami') {
-  window.open(
-    `https://wa.me/${WHATSAPP_NUMBER}`,
-    '_blank',
-    'noopener,noreferrer'
-  );
-  return;
-}
+      return false;
+    };
 
-  if (isFaqLink) {
-    const section = document.getElementById('help');
-
-    if (!section) {
-      window.location.href =
-        `${window.location.pathname}#help`;
+    if (item === 'Beranda') {
+      window.location.href = window.location.pathname;
       return;
     }
 
-    const index = faqIndex[item];
+    if (item === 'Top Up Games') {
+      scrollTo(['games']) ||
+        (window.location.href = `${window.location.pathname}#games`);
+      return;
+    }
 
-    if (index === undefined) {
+    if (item === 'Layanan Gaming' || item === 'Layanan Game') {
+      if (!scrollTo(['services', 'layanan'])) {
+        window.location.href = `${window.location.pathname}#layanan`;
+      }
+      return;
+    }
+
+    if (item === 'Promo') {
+      scrollTo(['promo']) ||
+        (window.location.href = `${window.location.pathname}#promo`);
+      return;
+    }
+
+    if (item === 'Voucher') {
+      if (!scrollTo(['voucher'])) {
+        onNotify?.('Katalog voucher sedang disiapkan.');
+      }
+      return;
+    }
+
+    if (item === 'Cek Transaksi') {
+      scrollTo(['transaction', 'cek-transaksi']) ||
+        onNotify?.('Fitur cek transaksi sedang disiapkan.');
+      return;
+    }
+
+    if (item === 'Artikel') {
+      scrollTo(['articles', 'artikel']) ||
+        onNotify?.('Artikel SAVIXARA sedang disiapkan.');
+      return;
+    }
+
+    if (item === 'Hubungi Kami') {
+      window.open(
+        `https://wa.me/${WHATSAPP_NUMBER}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
+      return;
+    }
+
+    if (
+      item === 'Pusat Bantuan' ||
+      item === 'FAQ' ||
+      item === 'Cara Top Up' ||
+      item === 'Cara Pembayaran' ||
+      item === 'Refund'
+    ) {
+      const section =
+        document.getElementById('help') ||
+        document.getElementById('faq');
+
+      if (!section) {
+        window.location.href =
+          `${window.location.pathname}#help`;
+        return;
+      }
+
       section.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
+
+      if (item === 'Pusat Bantuan' || item === 'FAQ') {
+        return;
+      }
+
+      const keywords = {
+        'Cara Top Up': ['top up', 'topup'],
+        'Cara Pembayaran': ['pembayaran', 'metode pembayaran'],
+        Refund: ['refund', 'pengembalian dana'],
+      };
+
+      const questions = section.querySelectorAll('details.faq-item');
+
+      const match = Array.from(questions).find((detail) => {
+        const summary =
+          detail.querySelector('summary')?.textContent?.toLowerCase() || '';
+
+        return keywords[item].some((keyword) =>
+          summary.includes(keyword)
+        );
+      });
+
+      if (match) {
+        match.open = true;
+        match.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      } else {
+        onNotify?.(`Pertanyaan ${item} belum ditemukan di FAQ.`);
+      }
+
       return;
     }
 
-    const buttons =
-      section.querySelectorAll('.faq-question');
-
-    const details =
-      section.querySelectorAll('details.faq-item');
-
-    if (buttons[index]) {
-      if (
-        buttons[index].getAttribute('aria-expanded') !== 'true'
-      ) {
-        buttons[index].click();
-      }
-
-      buttons[index].scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    } else if (details[index]) {
-      details[index].open = true;
-
-      details[index].scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
+    if (onNotify) {
+      onNotify(`${item} akan segera tersedia.`);
     }
-
-    return;
-  }
-
-  if (onNotify) {
-    onNotify(`${item} akan segera tersedia.`);
-  }
-};
+  };
+  
 
   return (
     <footer className="footer">
