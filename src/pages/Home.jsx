@@ -29,6 +29,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GameCard from '../components/GameCard';
 import Account from './Account';
+import Admin from './Admin';
 import { supabase } from '../supabase';
 
 /* =========================================================
