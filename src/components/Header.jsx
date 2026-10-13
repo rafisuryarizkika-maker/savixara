@@ -443,6 +443,32 @@ if (active) {
       {user.email}
     </div>
 
+    {isAdmin && (
+      <button
+        type="button"
+        className="drawer-login"
+        onClick={() => {
+          closeDrawer();
+          window.dispatchEvent(
+            new CustomEvent('savixara-open-admin')
+          );
+        }}
+      >
+        Panel Admin
+      </button>
+    )}
+
+    <button
+      type="button"
+      className="drawer-login"
+      onClick={() => {
+        closeDrawer();
+        onOpenAccount?.();
+      }}
+    >
+      Lihat Halaman Akun
+    </button>
+
     <button
       type="button"
       className="drawer-login"
@@ -464,6 +490,7 @@ if (active) {
   </div>
 ) : (
   <button
+    type="button"
     className="drawer-login"
     onClick={() => {
       closeDrawer();
@@ -473,11 +500,8 @@ if (active) {
     Masuk / Daftar
   </button>
 )}
-            
-  
-          
-          
-          </aside>
+       
+         </aside>
         </div>
       )}
       {showAuth && (
