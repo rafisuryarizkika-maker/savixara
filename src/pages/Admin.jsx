@@ -105,14 +105,32 @@ async function loadProducts(isActive = true) {
   }, []);
 
   
+
 async function testMelostoreConnection() {
   setProviderTesting(true);
   setProviderMessage('Sedang memeriksa koneksi Melostore...');
 
   try {
+    const {
+      data: sessionData,
+      error: sessionError
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !sessionData?.session?.access_token) {
+      setProviderMessage(
+        'Sesi login tidak ditemukan. Silakan keluar lalu login kembali.'
+      );
+      return;
+    }
+
     const { data, error } = await supabase.functions.invoke(
       'melostore-profile',
-      { body: {} }
+      {
+        body: {},
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`
+        }
+      }
     );
 
     if (error) {
@@ -123,7 +141,9 @@ async function testMelostoreConnection() {
     }
 
     if (data?.ok) {
-      setProviderMessage(data.message || 'Koneksi Melostore berhasil.');
+      setProviderMessage(
+        data.message || 'Koneksi Melostore berhasil.'
+      );
     } else {
       setProviderMessage(
         data?.message || 'Koneksi belum berhasil. Periksa Logs di Supabase.'
@@ -131,12 +151,14 @@ async function testMelostoreConnection() {
     }
   } catch (error) {
     setProviderMessage(
-      'Tes gagal dijalankan: ' + (error?.message || 'Kesalahan tidak diketahui.')
+      'Tes gagal dijalankan: ' +
+      (error?.message || 'Kesalahan tidak diketahui.')
     );
   } finally {
     setProviderTesting(false);
   }
 }
+  
 
 async function saveProduct(product) {
   setMessage('');
