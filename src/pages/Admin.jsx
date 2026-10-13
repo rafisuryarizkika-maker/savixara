@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 
@@ -8,11 +7,17 @@ export default function Admin({ onBack }) {
   const [games, setGames] = useState([]);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productSavingId, setProductSavingId] = useState(null);
+
   const [providerTesting, setProviderTesting] = useState(false);
   const [providerMessage, setProviderMessage] = useState('');
+
+  const [pricelistTesting, setPricelistTesting] = useState(false);
+  const [pricelistMessage, setPricelistMessage] = useState('');
+  const [pricelistData, setPricelistData] = useState([]);
 
   const [form, setForm] = useState({
     name: '',
@@ -25,77 +30,81 @@ export default function Admin({ onBack }) {
     status: true,
   });
 
+  async function loadGames() {
+    const { data, error } = await supabase
+      .from('games')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      setMessage('Gagal memuat game: ' + error.message);
+      return;
+    }
+
+    setGames(data || []);
+  }
+
+  async function loadProducts() {
+    setProductsLoading(true);
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      setMessage('Gagal memuat produk: ' + error.message);
+      setProductsLoading(false);
+      return;
+    }
+
+    setProducts(data || []);
+    setProductsLoading(false);
+  }
+
   useEffect(() => {
     let active = true;
 
     async function checkAdmin() {
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
+      try {
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
 
-      if (userError || !userData?.user) {
+        if (userError || !userData?.user) {
+          if (active) {
+            setMessage('Silakan login terlebih dahulu.');
+            setLoading(false);
+          }
+          return;
+        }
+
+        const { data: isAdmin, error: adminError } =
+          await supabase.rpc('is_admin');
+
+        if (adminError || isAdmin !== true) {
+          if (active) {
+            setMessage('Akses ditolak. Akun admin diperlukan.');
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (!active) return;
+
+        setAuthorized(true);
+        await Promise.all([loadGames(), loadProducts()]);
+
+        if (active) setLoading(false);
+      } catch (error) {
         if (active) {
-          setMessage('Silakan login terlebih dahulu.');
+          setMessage(
+            'Gagal memeriksa akses admin: ' +
+              (error?.message || 'Kesalahan tidak diketahui.')
+          );
           setLoading(false);
         }
-        return;
       }
-
-      const { data: isAdmin, error: adminError } =
-        await supabase.rpc('is_admin');
-
-      if (adminError || isAdmin !== true) {
-        if (active) {
-          setMessage('Akses ditolak. Akun admin diperlukan.');
-          setLoading(false);
-        }
-        return;
-      }
-
-      if (active) {
-  setAuthorized(true);
-  await loadGames(active);
-  await loadProducts(active);
-  setLoading(false);
-}
-      
     }
-
-    async function loadGames(isActive = true) {
-      const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
-      if (!isActive) return;
-
-      if (error) {
-        setMessage('Gagal memuat game: ' + error.message);
-        return;
-      }
-
-      setGames(data || []);
-    }
-    
-async function loadProducts(isActive = true) {
-  setProductsLoading(true);
-
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
-  if (!isActive) return;
-
-  if (error) {
-    setMessage('Gagal memuat produk: ' + error.message);
-    setProductsLoading(false);
-    return;
-  }
-
-  setProducts(data || []);
-  setProductsLoading(false);
-}
-    
 
     checkAdmin();
 
@@ -104,114 +113,167 @@ async function loadProducts(isActive = true) {
     };
   }, []);
 
-  
+  async function testMelostoreConnection() {
+    setProviderTesting(true);
+    setProviderMessage('Sedang memeriksa koneksi Melostore...');
 
-async function testMelostoreConnection() {
-  setProviderTesting(true);
-  setProviderMessage('Sedang memeriksa koneksi Melostore...');
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-  try {
-    
-const {
-  data: { session },
-  error: sessionError
-} = await supabase.auth.getSession();
+      if (sessionError || !session?.access_token) {
+        setProviderMessage(
+          'Sesi login tidak ditemukan. Silakan login kembali.'
+        );
+        return;
+      }
 
-if (sessionError || !session?.access_token) {
-  setProviderMessage(
-    'Sesi login tidak ditemukan. Silakan login kembali.'
-  );
-  return;
-}
+      const { data, error } = await supabase.functions.invoke(
+        'melostore-profile',
+        {
+          body: {},
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
-const { data, error } = await supabase.functions.invoke(
-  'melostore-profile',
-  {
-    body: {},
-    headers: {
-      Authorization: `Bearer ${session.access_token}`
+      if (error) {
+        setProviderMessage(
+          'Tes gagal: ' + (error.message || 'Permintaan fungsi gagal.')
+        );
+        return;
+      }
+
+      if (data?.ok) {
+        setProviderMessage(data.message || 'Koneksi Melostore berhasil.');
+      } else {
+        setProviderMessage(
+          data?.message ||
+            'Koneksi belum berhasil. Periksa Logs di Supabase.'
+        );
+      }
+    } catch (error) {
+      setProviderMessage(
+        'Tes gagal dijalankan: ' +
+          (error?.message || 'Kesalahan tidak diketahui.')
+      );
+    } finally {
+      setProviderTesting(false);
     }
   }
-);
-    
 
-    if (error) {
-      setProviderMessage(
-        'Tes gagal: ' + (error.message || 'Permintaan fungsi gagal.')
+  async function testMelostorePricelist() {
+    setPricelistTesting(true);
+    setPricelistMessage('Sedang mengambil daftar harga Melostore...');
+    setPricelistData([]);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        setPricelistMessage(
+          'Sesi login tidak ditemukan. Silakan login kembali.'
+        );
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke(
+        'melostore-pricelist',
+        {
+          body: { limit: 5 },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
       );
+
+      if (error) {
+        setPricelistMessage(
+          'Tes pricelist gagal: ' +
+            (error.message || 'Permintaan fungsi gagal.')
+        );
+        return;
+      }
+
+      if (!data?.ok) {
+        setPricelistMessage(
+          data?.message || 'Daftar harga gagal diambil.'
+        );
+        return;
+      }
+
+      const items = Array.isArray(data.data) ? data.data : [];
+      setPricelistData(items);
+      setPricelistMessage(
+        `${data.message || 'Pricelist berhasil diambil.'} Jumlah produk: ${items.length}.`
+      );
+    } catch (error) {
+      setPricelistMessage(
+        'Tes pricelist gagal: ' +
+          (error?.message || 'Kesalahan tidak diketahui.')
+      );
+    } finally {
+      setPricelistTesting(false);
+    }
+  }
+
+  async function saveProduct(product) {
+    setMessage('');
+
+    const costPrice = Number(product.cost_price);
+    const sellingPrice = Number(product.selling_price);
+    const promoPrice =
+      product.promo_price === '' || product.promo_price == null
+        ? null
+        : Number(product.promo_price);
+
+    if (
+      !Number.isFinite(costPrice) ||
+      !Number.isFinite(sellingPrice) ||
+      costPrice < 0 ||
+      sellingPrice < 0
+    ) {
+      setMessage('Harga modal dan harga jual harus valid.');
       return;
     }
 
-    if (data?.ok) {
-      setProviderMessage(
-        data.message || 'Koneksi Melostore berhasil.'
-      );
-    } else {
-      setProviderMessage(
-        data?.message || 'Koneksi belum berhasil. Periksa Logs di Supabase.'
-      );
+    if (
+      promoPrice !== null &&
+      (!Number.isFinite(promoPrice) || promoPrice < 0)
+    ) {
+      setMessage('Harga promo harus valid atau dikosongkan.');
+      return;
     }
-  } catch (error) {
-    setProviderMessage(
-      'Tes gagal dijalankan: ' +
-      (error?.message || 'Kesalahan tidak diketahui.')
-    );
-  } finally {
-    setProviderTesting(false);
+
+    setProductSavingId(product.id);
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          cost_price: costPrice,
+          selling_price: sellingPrice,
+          promo_price: promoPrice,
+        })
+        .eq('id', product.id);
+
+      if (error) {
+        setMessage('Gagal menyimpan harga: ' + error.message);
+        return;
+      }
+
+      setMessage('Harga produk berhasil diperbarui.');
+      await loadProducts();
+    } finally {
+      setProductSavingId(null);
+    }
   }
-}
-  
-
-async function saveProduct(product) {
-  setMessage('');
-
-  const costPrice = Number(product.cost_price);
-  const sellingPrice = Number(product.selling_price);
-  const promoPrice =
-    product.promo_price === '' || product.promo_price == null
-      ? null
-      : Number(product.promo_price);
-
-  if (
-  !Number.isFinite(costPrice) ||
-  !Number.isFinite(sellingPrice) ||
-  costPrice < 0 ||
-  sellingPrice < 0
-) {
-    setMessage('Harga modal dan harga jual harus valid.');
-    return;
-  }
-
-  if (
-  promoPrice !== null &&
-  (!Number.isFinite(promoPrice) || promoPrice < 0)
-) {
-    setMessage('Harga promo harus valid atau dikosongkan.');
-    return;
-  }
-
-  setProductSavingId(product.id);
-
-  const { error } = await supabase
-    .from('products')
-    .update({
-      cost_price: costPrice,
-      selling_price: sellingPrice,
-      promo_price: promoPrice,
-    })
-    .eq('id', product.id);
-
-  setProductSavingId(null);
-
-  if (error) {
-    setMessage('Gagal menyimpan harga: ' + error.message);
-    return;
-  }
-
-  setMessage('Harga produk berhasil diperbarui.');
-  await loadProducts();
-}
-  
 
   function updateForm(event) {
     const { name, value, type, checked } = event.target;
@@ -253,35 +315,30 @@ async function saveProduct(product) {
       description: form.description.trim() || null,
     };
 
-    const { error } = await supabase
-      .from('games')
-      .insert(payload);
+    try {
+      const { error } = await supabase.from('games').insert(payload);
 
-    setSaving(false);
+      if (error) {
+        setMessage('Game gagal ditambahkan: ' + error.message);
+        return;
+      }
 
-    if (error) {
-      setMessage('Game gagal ditambahkan: ' + error.message);
-      return;
+      setMessage('Game berhasil ditambahkan.');
+      setForm({
+        name: '',
+        publisher: '',
+        category: '',
+        cover_url: '',
+        icon_url: '',
+        description: '',
+        sort_order: 0,
+        status: true,
+      });
+
+      await loadGames();
+    } finally {
+      setSaving(false);
     }
-
-    setMessage('Game berhasil ditambahkan.');
-    setForm({
-      name: '',
-      publisher: '',
-      category: '',
-      cover_url: '',
-      icon_url: '',
-      description: '',
-      sort_order: 0,
-      status: true,
-    });
-
-    const { data } = await supabase
-      .from('games')
-      .select('*')
-      .order('sort_order', { ascending: true });
-
-    setGames(data || []);
   }
 
   async function toggleGame(game) {
@@ -299,17 +356,13 @@ async function saveProduct(product) {
 
     setGames((previous) =>
       previous.map((item) =>
-        item.id === game.id
-          ? { ...item, status: !game.status }
-          : item
+        item.id === game.id ? { ...item, status: !game.status } : item
       )
     );
   }
 
   async function deleteGame(game) {
-    const confirmed = window.confirm(
-      `Hapus game "${game.name}"?`
-    );
+    const confirmed = window.confirm(`Hapus game "${game.name}"?`);
 
     if (!confirmed) return;
 
@@ -332,7 +385,11 @@ async function saveProduct(product) {
   }
 
   if (loading) {
-    return <main className="admin-page"><p>Memeriksa akses admin...</p></main>;
+    return (
+      <main className="admin-page">
+        <p>Memeriksa akses admin...</p>
+      </main>
+    );
   }
 
   if (!authorized) {
@@ -375,6 +432,41 @@ async function saveProduct(product) {
           <p className="admin-message" role="status">
             {providerMessage}
           </p>
+        )}
+      </section>
+
+      <section className="admin-panel">
+        <h2>Tes Pricelist Melostore</h2>
+        <p>
+          Ambil maksimal lima item untuk memeriksa respons daftar harga.
+          Pengujian ini tidak membuat transaksi.
+        </p>
+        <button
+          type="button"
+          onClick={testMelostorePricelist}
+          disabled={pricelistTesting}
+        >
+          {pricelistTesting
+            ? 'Mengambil pricelist...'
+            : 'Tes Pricelist Melostore'}
+        </button>
+
+        {pricelistMessage && (
+          <p className="admin-message" role="status">
+            {pricelistMessage}
+          </p>
+        )}
+
+        {pricelistData.length > 0 && (
+          <pre
+            style={{
+              overflowX: 'auto',
+              whiteSpace: 'pre-wrap',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {JSON.stringify(pricelistData, null, 2)}
+          </pre>
         )}
       </section>
 
@@ -477,9 +569,7 @@ async function saveProduct(product) {
             <div>
               <strong>{game.name}</strong>
               <p>{game.category || 'Tanpa kategori'}</p>
-              <small>
-                Status: {game.status ? 'Aktif' : 'Nonaktif'}
-              </small>
+              <small>Status: {game.status ? 'Aktif' : 'Nonaktif'}</small>
             </div>
 
             <div className="admin-game-actions">
@@ -500,7 +590,7 @@ async function saveProduct(product) {
           </article>
         ))}
       </section>
-      
+
       <section className="admin-panel">
         <h2>Pengaturan Harga Produk ({products.length})</h2>
 
@@ -596,9 +686,7 @@ async function saveProduct(product) {
           ))
         )}
       </section>
-                              
     </main>
   );
-        }
-
-    
+      }
+               
