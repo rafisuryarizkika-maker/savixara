@@ -33,11 +33,14 @@ useEffect(() => {
     const { data, error } = await supabase.rpc('is_admin');
     console.log('Admin check:', { data, error });
     
-    if (active) {
-      setIsAdmin(!error && data === true);
-    }
-  }
-
+    
+if (active) {
+  setIsAdmin(!error && data === true);
+  window.alert(
+    'Status admin: ' + (!error && data === true)
+  );
+}
+    
   supabase.auth.getUser().then(({ data }) => {
     if (!active) return;
     setUser(data.user ?? null);
