@@ -202,9 +202,6 @@ useEffect(() => {
     <div className="profile-email">
       {user.email}
     </div>
-    <div style={{ color: 'white', padding: '8px' }}>
-  Status admin: {isAdmin ? 'TRUE' : 'FALSE'}
-</div>
     
 {isAdmin && (
   <button
