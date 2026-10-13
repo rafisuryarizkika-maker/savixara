@@ -11,6 +11,8 @@ export default function Admin({ onBack }) {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productSavingId, setProductSavingId] = useState(null);
+  const [providerTesting, setProviderTesting] = useState(false);
+  const [providerMessage, setProviderMessage] = useState('');
 
   const [form, setForm] = useState({
     name: '',
@@ -103,6 +105,39 @@ async function loadProducts(isActive = true) {
   }, []);
 
   
+async function testMelostoreConnection() {
+  setProviderTesting(true);
+  setProviderMessage('Sedang memeriksa koneksi Melostore...');
+
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      'melostore-profile',
+      { body: {} }
+    );
+
+    if (error) {
+      setProviderMessage(
+        'Tes gagal: ' + (error.message || 'Permintaan fungsi gagal.')
+      );
+      return;
+    }
+
+    if (data?.ok) {
+      setProviderMessage(data.message || 'Koneksi Melostore berhasil.');
+    } else {
+      setProviderMessage(
+        data?.message || 'Koneksi belum berhasil. Periksa Logs di Supabase.'
+      );
+    }
+  } catch (error) {
+    setProviderMessage(
+      'Tes gagal dijalankan: ' + (error?.message || 'Kesalahan tidak diketahui.')
+    );
+  } finally {
+    setProviderTesting(false);
+  }
+}
+
 async function saveProduct(product) {
   setMessage('');
 
@@ -301,6 +336,23 @@ async function saveProduct(product) {
           {message}
         </p>
       )}
+
+      <section className="admin-panel">
+        <h2>Koneksi Provider</h2>
+        <p>Periksa apakah SAVIXARA dapat menghubungi akun Melostore.</p>
+        <button
+          type="button"
+          onClick={testMelostoreConnection}
+          disabled={providerTesting}
+        >
+          {providerTesting ? 'Memeriksa koneksi...' : 'Tes Koneksi Melostore'}
+        </button>
+        {providerMessage && (
+          <p className="admin-message" role="status">
+            {providerMessage}
+          </p>
+        )}
+      </section>
 
       <section className="admin-panel">
         <h2>Tambah Game</h2>
@@ -524,4 +576,5 @@ async function saveProduct(product) {
     </main>
   );
         }
-      
+
+    
