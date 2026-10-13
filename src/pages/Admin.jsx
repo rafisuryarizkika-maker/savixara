@@ -111,27 +111,29 @@ async function testMelostoreConnection() {
   setProviderMessage('Sedang memeriksa koneksi Melostore...');
 
   try {
-    const {
-      data: sessionData,
-      error: sessionError
-    } = await supabase.auth.getSession();
+    
+const {
+  data: { session },
+  error: sessionError
+} = await supabase.auth.getSession();
 
-    if (sessionError || !sessionData?.session?.access_token) {
-      setProviderMessage(
-        'Sesi login tidak ditemukan. Silakan keluar lalu login kembali.'
-      );
-      return;
+if (sessionError || !session?.access_token) {
+  setProviderMessage(
+    'Sesi login tidak ditemukan. Silakan login kembali.'
+  );
+  return;
+}
+
+const { data, error } = await supabase.functions.invoke(
+  'melostore-profile',
+  {
+    body: {},
+    headers: {
+      Authorization: `Bearer ${session.access_token}`
     }
-
-    const { data, error } = await supabase.functions.invoke(
-      'melostore-profile',
-      {
-        body: {},
-        headers: {
-          Authorization: `Bearer ${sessionData.session.access_token}`
-        }
-      }
-    );
+  }
+);
+    
 
     if (error) {
       setProviderMessage(
