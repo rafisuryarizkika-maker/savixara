@@ -19,6 +19,10 @@ export default function Admin({ onBack }) {
   const [pricelistMessage, setPricelistMessage] = useState('');
   const [pricelistData, setPricelistData] = useState([]);
 
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
+  const [syncResult, setSyncResult] = useState(null);
+
   const [form, setForm] = useState({
     name: '',
     publisher: '',
@@ -220,6 +224,72 @@ export default function Admin({ onBack }) {
       );
     } finally {
       setPricelistTesting(false);
+    }
+  }
+
+  async function syncMelostorePricelist() {
+    const confirmed = window.confirm(
+      'Mulai sinkronisasi katalog Melostore ke database SAVIXARA? Produk baru akan dibuat nonaktif dengan harga jual Rp0. Harga jual dan harga promo produk lama tidak akan diubah.'
+    );
+
+    if (!confirmed) return;
+
+    setSyncRunning(true);
+    setSyncMessage('Sedang menyinkronkan katalog Melostore. Mohon jangan tutup halaman.');
+    setSyncResult(null);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        setSyncMessage('Sesi login tidak ditemukan. Silakan login kembali.');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke(
+        'melostore-sync-pricelist',
+        {
+          body: { limit: 500 },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (error) {
+        let detail = error.message || 'Permintaan fungsi gagal.';
+        try {
+          const response = error.context;
+          if (response && typeof response.json === 'function') {
+            const errorBody = await response.json();
+            if (errorBody?.message) detail = errorBody.message;
+          }
+        } catch {
+          // Gunakan pesan error awal jika respons tidak bisa dibaca.
+        }
+        setSyncMessage('Sinkronisasi gagal: ' + detail);
+        return;
+      }
+
+      if (!data?.ok) {
+        setSyncMessage(data?.message || 'Sinkronisasi gagal. Periksa Logs di Supabase.');
+        setSyncResult(data || null);
+        return;
+      }
+
+      setSyncResult(data);
+      setSyncMessage(data.message || 'Sinkronisasi selesai.');
+      await loadProducts();
+    } catch (error) {
+      setSyncMessage(
+        'Sinkronisasi gagal: ' +
+          (error?.message || 'Kesalahan tidak diketahui.')
+      );
+    } finally {
+      setSyncRunning(false);
     }
   }
 
@@ -471,6 +541,59 @@ export default function Admin({ onBack }) {
       </section>
 
       <section className="admin-panel">
+        <h2>Sinkronisasi Pricelist Melostore</h2>
+        <p>
+          Impor dan perbarui katalog dari Melostore. Produk baru akan berstatus
+          nonaktif dengan harga jual Rp0, sedangkan harga jual dan harga promo
+          produk lama tetap dipertahankan.
+        </p>
+        <button
+          type="button"
+          onClick={syncMelostorePricelist}
+          disabled={syncRunning}
+        >
+          {syncRunning ? 'Menyinkronkan katalog...' : 'Sinkronisasi Pricelist Melostore'}
+        </button>
+
+        {syncMessage && (
+          <p className="admin-message" role="status">
+            {syncMessage}
+          </p>
+        )}
+
+        {syncResult?.summary && (
+          <div>
+            <h3>Ringkasan Sinkronisasi</h3>
+            <pre
+              style={{
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {JSON.stringify(syncResult.summary, null, 2)}
+            </pre>
+            {Array.isArray(syncResult.skippedProducts) && syncResult.skippedProducts.length > 0 && (
+              <details>
+                <summary>Produk dilewati ({syncResult.skippedProducts.length})</summary>
+                <pre style={{ overflowX: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {JSON.stringify(syncResult.skippedProducts, null, 2)}
+                </pre>
+              </details>
+            )}
+            {Array.isArray(syncResult.failedProducts) && syncResult.failedProducts.length > 0 && (
+              <details>
+                <summary>Produk gagal ({syncResult.failedProducts.length})</summary>
+                <pre style={{ overflowX: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {JSON.stringify(syncResult.failedProducts, null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+        )}
+      </section>
+
+      <section className="admin-panel">
         <h2>Tambah Game</h2>
 
         <form onSubmit={saveGame} className="admin-form">
@@ -625,7 +748,7 @@ export default function Admin({ onBack }) {
                         previous.map((item) =>
                           item.id === product.id
                             ? { ...item, cost_price: event.target.value }
-                            : item
+                       : item
                         )
                       )
                     }
@@ -689,4 +812,5 @@ export default function Admin({ onBack }) {
     </main>
   );
       }
-               
+
+                      
