@@ -2796,3 +2796,137 @@ padding: 11px 16px;
 font-size: 14px;
 }
 }
+
+/* SAVIXARA ADMIN PANEL - RESPONSIVE FIX */
+
+.admin-page {
+width: min(100% - 32px, 1100px);
+margin: 32px auto;
+color: var(--text);
+min-width: 0;
+}
+
+.admin-page button,
+.admin-page input,
+.admin-page textarea,
+.admin-page select {
+max-width: 100%;
+font: inherit;
+}
+
+.admin-page button {
+cursor: pointer;
+}
+
+.admin-page > button {
+padding: 12px 18px;
+margin-bottom: 24px;
+color: var(--text);
+background: var(--surface);
+border: 1px solid var(--line);
+border-radius: 12px;
+}
+
+.admin-heading {
+margin: 24px 0;
+}
+
+.admin-heading h1 {
+margin: 12px 0;
+font-size: clamp(28px, 5vw, 42px);
+line-height: 1.2;
+}
+
+.admin-heading p {
+line-height: 1.7;
+}
+
+.admin-panel {
+margin: 24px 0;
+padding: clamp(16px, 3vw, 28px);
+background: var(--surface);
+border: 1px solid var(--line);
+border-radius: 20px;
+min-width: 0;
+}
+
+.admin-panel h2 {
+margin-top: 0;
+margin-bottom: 24px;
+}
+
+.admin-form {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 18px;
+}
+
+.admin-form label {
+display: flex;
+flex-direction: column;
+gap: 8px;
+min-width: 0;
+line-height: 1.5;
+}
+
+.admin-form input,
+.admin-form textarea,
+.admin-form select {
+width: 100%;
+min-width: 0;
+padding: 12px 14px;
+color: var(--text);
+background: var(--bg);
+border: 1px solid var(--line);
+border-radius: 10px;
+box-sizing: border-box;
+}
+
+.admin-form textarea {
+min-height: 120px;
+resize: vertical;
+}
+
+.admin-form input[type="checkbox"] {
+width: 20px;
+height: 20px;
+}
+
+.admin-form button {
+width: 100%;
+padding: 14px;
+color: white;
+background: var(--gradient);
+border: 0;
+border-radius: 12px;
+font-weight: 700;
+}
+
+.admin-message {
+padding: 14px 16px;
+margin: 16px 0;
+overflow-wrap: anywhere;
+background: var(--bg);
+border: 1px solid var(--line);
+border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+.admin-page {
+width: calc(100% - 24px);
+margin: 20px auto;
+}
+
+.admin-form {
+grid-template-columns: minmax(0, 1fr);
+}
+
+.admin-panel {
+padding: 16px;
+border-radius: 14px;
+}
+
+.admin-heading h1 {
+font-size: 30px;
+}
+}
