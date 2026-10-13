@@ -18,6 +18,7 @@ export default function Admin({ onBack }) {
   const [pricelistTesting, setPricelistTesting] = useState(false);
   const [pricelistMessage, setPricelistMessage] = useState('');
   const [pricelistData, setPricelistData] = useState([]);
+  const [pricelistMeta, setPricelistMeta] = useState(null);
 
   const [syncRunning, setSyncRunning] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
@@ -173,6 +174,7 @@ export default function Admin({ onBack }) {
     setPricelistTesting(true);
     setPricelistMessage('Sedang mengambil daftar harga Melostore...');
     setPricelistData([]);
+    setPricelistMeta(null);
 
     try {
       const {
@@ -214,8 +216,9 @@ export default function Admin({ onBack }) {
 
       const items = Array.isArray(data.data) ? data.data : [];
       setPricelistData(items);
+      setPricelistMeta(data.meta ?? null);
       setPricelistMessage(
-        `${data.message || 'Pricelist berhasil diambil.'} Jumlah produk: ${items.length}.`
+        `${data.message || 'Pricelist berhasil diambil.'} Jumlah produk pada respons ini: ${items.length}.`
       );
     } catch (error) {
       setPricelistMessage(
@@ -527,16 +530,38 @@ export default function Admin({ onBack }) {
           </p>
         )}
 
+        {pricelistMeta && (
+          <div>
+            <h3>Metadata Pricelist</h3>
+            <p>
+              Bagian ini dapat berisi informasi pagination dari provider,
+              jika disediakan oleh Melostore.
+            </p>
+            <pre
+              style={{
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {JSON.stringify(pricelistMeta, null, 2)}
+            </pre>
+          </div>
+        )}
+
         {pricelistData.length > 0 && (
-          <pre
-            style={{
-              overflowX: 'auto',
-              whiteSpace: 'pre-wrap',
-              overflowWrap: 'anywhere',
-            }}
-          >
-            {JSON.stringify(pricelistData, null, 2)}
-          </pre>
+          <details>
+            <summary>Lihat data produk ({pricelistData.length})</summary>
+            <pre
+              style={{
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {JSON.stringify(pricelistData, null, 2)}
+            </pre>
+          </details>
         )}
       </section>
 
@@ -812,5 +837,3 @@ export default function Admin({ onBack }) {
     </main>
   );
       }
-
-                      
