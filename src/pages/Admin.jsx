@@ -8,6 +8,9 @@ export default function Admin({ onBack }) {
   const [games, setGames] = useState([]);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productSavingId, setProductSavingId] = useState(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -47,10 +50,12 @@ export default function Admin({ onBack }) {
       }
 
       if (active) {
-        setAuthorized(true);
-        await loadGames(active);
-        setLoading(false);
-      }
+  setAuthorized(true);
+  await loadGames(active);
+  await loadProducts(active);
+  setLoading(false);
+}
+      
     }
 
     async function loadGames(isActive = true) {
@@ -68,6 +73,27 @@ export default function Admin({ onBack }) {
 
       setGames(data || []);
     }
+    
+async function loadProducts(isActive = true) {
+  setProductsLoading(true);
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (!isActive) return;
+
+  if (error) {
+    setMessage('Gagal memuat produk: ' + error.message);
+    setProductsLoading(false);
+    return;
+  }
+
+  setProducts(data || []);
+  setProductsLoading(false);
+}
+    
 
     checkAdmin();
 
@@ -75,6 +101,58 @@ export default function Admin({ onBack }) {
       active = false;
     };
   }, []);
+
+  
+async function saveProduct(product) {
+  setMessage('');
+
+  const costPrice = Number(product.cost_price);
+  const sellingPrice = Number(product.selling_price);
+  const promoPrice =
+    product.promo_price === '' || product.promo_price == null
+      ? null
+      : Number(product.promo_price);
+
+  if (
+  !Number.isFinite(costPrice) ||
+  !Number.isFinite(sellingPrice) ||
+  costPrice < 0 ||
+  sellingPrice < 0
+) {
+    setMessage('Harga modal dan harga jual harus valid.');
+    return;
+  }
+
+  if (
+  promoPrice !== null &&
+  (!Number.isFinite(promoPrice) || promoPrice < 0)
+) {
+    setMessage('Harga promo harus valid atau dikosongkan.');
+    return;
+  }
+
+  setProductSavingId(product.id);
+
+  const { error } = await supabase
+    .from('products')
+    .update({
+      cost_price: costPrice,
+      selling_price: sellingPrice,
+      promo_price: promoPrice,
+    })
+    .eq('id', product.id);
+
+  setProductSavingId(null);
+
+  if (error) {
+    setMessage('Gagal menyimpan harga: ' + error.message);
+    return;
+  }
+
+  setMessage('Harga produk berhasil diperbarui.');
+  await loadProducts();
+}
+  
 
   function updateForm(event) {
     const { name, value, type, checked } = event.target;
@@ -346,6 +424,103 @@ export default function Admin({ onBack }) {
           </article>
         ))}
       </section>
+      
+      <section className="admin-panel">
+        <h2>Pengaturan Harga Produk ({products.length})</h2>
+
+        {productsLoading ? (
+          <p>Memuat produk...</p>
+        ) : products.length === 0 ? (
+          <p>Belum ada produk di tabel products.</p>
+        ) : (
+          products.map((product) => (
+            <article className="admin-game" key={product.id}>
+              <div>
+                <strong>{product.name || product.title || 'Produk'}</strong>
+                <p>{product.category || 'Tanpa kategori'}</p>
+              </div>
+
+              <form
+                className="admin-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  saveProduct(product);
+                }}
+              >
+                <label>
+                  Harga Modal (Rp)
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={product.cost_price ?? ''}
+                    onChange={(event) =>
+                      setProducts((previous) =>
+                        previous.map((item) =>
+                          item.id === product.id
+                            ? { ...item, cost_price: event.target.value }
+                            : item
+                        )
+                      )
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  Harga Jual (Rp)
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={product.selling_price ?? ''}
+                    onChange={(event) =>
+                      setProducts((previous) =>
+                        previous.map((item) =>
+                          item.id === product.id
+                            ? { ...item, selling_price: event.target.value }
+                            : item
+                        )
+                      )
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  Harga Promo (Rp, opsional)
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={product.promo_price ?? ''}
+                    onChange={(event) =>
+                      setProducts((previous) =>
+                        previous.map((item) =>
+                          item.id === product.id
+                            ? { ...item, promo_price: event.target.value }
+                            : item
+                        )
+                      )
+                    }
+                    placeholder="Kosongkan jika tidak promo"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={productSavingId === product.id}
+                >
+                  {productSavingId === product.id
+                    ? 'Menyimpan...'
+                    : 'Simpan Harga'}
+                </button>
+              </form>
+            </article>
+          ))
+        )}
+      </section>
+                              
     </main>
   );
         }
