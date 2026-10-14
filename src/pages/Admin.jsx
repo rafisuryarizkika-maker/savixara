@@ -232,13 +232,12 @@ export default function Admin({ onBack }) {
 
   async function syncMelostorePricelist() {
     const confirmed = window.confirm(
-      'Mulai sinkronisasi katalog Melostore ke database SAVIXARA? Produk baru akan dibuat nonaktif dengan harga jual Rp0. Harga jual dan harga promo produk lama tidak akan diubah.'
+      'Mulai sinkronisasi katalog Melostore ke database SAVIXARA? Proses akan berjalan per halaman. Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.'
     );
-
     if (!confirmed) return;
 
     setSyncRunning(true);
-    setSyncMessage('Sedang menyinkronkan katalog Melostore. Mohon jangan tutup halaman.');
+    setSyncMessage('Menyiapkan sinkronisasi Melostore...');
     setSyncResult(null);
 
     try {
@@ -252,44 +251,75 @@ export default function Admin({ onBack }) {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke(
-        'melostore-sync-pricelist',
-        {
-          body: { limit: 500 },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      let jobId = null;
+      let finalData = null;
+      let attempts = 0;
+      const maxPagesPerRun = 1000;
 
-      if (error) {
-        let detail = error.message || 'Permintaan fungsi gagal.';
-        try {
-          const response = error.context;
-          if (response && typeof response.json === 'function') {
-            const errorBody = await response.json();
-            if (errorBody?.message) detail = errorBody.message;
+      while (attempts < maxPagesPerRun) {
+        attempts += 1;
+        setSyncMessage(
+          jobId
+            ? `Melanjutkan sinkronisasi Melostore (permintaan ke-${attempts})...`
+            : 'Memulai pekerjaan sinkronisasi Melostore...'
+        );
+
+        const { data, error } = await supabase.functions.invoke(
+          'melostore-sync-pricelist',
+          {
+            body: jobId ? { limit: 500, job_id: jobId } : { limit: 500 },
+            headers: { Authorization: `Bearer ${session.access_token}` },
           }
-        } catch {
-          // Gunakan pesan error awal jika respons tidak bisa dibaca.
+        );
+
+        if (error) {
+          let detail = error.message || 'Permintaan fungsi gagal.';
+          try {
+            const response = error.context;
+            if (response && typeof response.json === 'function') {
+              const errorBody = await response.json();
+              if (errorBody?.message) detail = errorBody.message;
+            }
+          } catch {
+            // Pertahankan pesan error awal jika respons tidak dapat dibaca.
+          }
+          setSyncMessage('Sinkronisasi berhenti: ' + detail + '. Periksa Logs di Supabase sebelum mencoba lagi.');
+          return;
         }
-        setSyncMessage('Sinkronisasi gagal: ' + detail);
-        return;
+
+        if (!data?.ok) {
+          setSyncResult(data || null);
+          setSyncMessage(data?.message || 'Sinkronisasi gagal. Periksa Logs di Supabase.');
+          return;
+        }
+
+        if (data.job_id) jobId = data.job_id;
+        finalData = data;
+        setSyncResult(data);
+
+        if (data.done === true || data.has_more === false) {
+          setSyncMessage(data.message || 'Sinkronisasi selesai.');
+          await loadProducts();
+          return;
+        }
+
+        // Wait for the provider's safe interval before requesting the next page.
+        const requestedWait = Number(data.wait_ms ?? 3200);
+        const waitMs = Math.min(Math.max(requestedWait, 1000), 300000);
+        const waitSeconds = Math.ceil(waitMs / 1000);
+        setSyncMessage(
+          `${data.message || 'Halaman berhasil diproses.'} Melanjutkan dalam ${waitSeconds} detik. Progres: ${JSON.stringify(data.summary || {})}`
+        );
+        await new Promise((resolve) => window.setTimeout(resolve, waitMs));
       }
 
-      if (!data?.ok) {
-        setSyncMessage(data?.message || 'Sinkronisasi gagal. Periksa Logs di Supabase.');
-        setSyncResult(data || null);
-        return;
-      }
-
-      setSyncResult(data);
-      setSyncMessage(data.message || 'Sinkronisasi selesai.');
-      await loadProducts();
+      setSyncResult(finalData);
+      setSyncMessage(
+        `Sinkronisasi dihentikan setelah ${maxPagesPerRun} permintaan untuk menjaga halaman tetap responsif. Pekerjaan${jobId ? ` ${jobId}` : ''} dapat dilanjutkan dengan ID pekerjaan yang sama.`
+      );
     } catch (error) {
       setSyncMessage(
-        'Sinkronisasi gagal: ' +
-          (error?.message || 'Kesalahan tidak diketahui.')
+        'Sinkronisasi gagal: ' + (error?.message || 'Kesalahan tidak diketahui.')
       );
     } finally {
       setSyncRunning(false);
@@ -832,8 +862,8 @@ export default function Admin({ onBack }) {
               </form>
             </article>
           ))
-        )}
+      )}
       </section>
     </main>
   );
-      }
+}
