@@ -23,6 +23,13 @@ export default function Admin({ onBack }) {
   const [syncRunning, setSyncRunning] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
   const [syncResult, setSyncResult] = useState(null);
+  const [syncJobId, setSyncJobId] = useState(() => {
+    try {
+      return window.localStorage.getItem('savixara_melostore_sync_job_id') || '';
+    } catch {
+      return '';
+    }
+  });
 
   const [form, setForm] = useState({
     name: '',
@@ -232,7 +239,9 @@ export default function Admin({ onBack }) {
 
   async function syncMelostorePricelist() {
     const confirmed = window.confirm(
-      'Mulai sinkronisasi katalog Melostore ke database SAVIXARA? Proses akan berjalan per halaman. Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.'
+      syncJobId
+        ? `Lanjutkan pekerjaan sinkronisasi Melostore yang tersimpan (${syncJobId})? Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.`
+        : 'Mulai pekerjaan sinkronisasi katalog Melostore ke database SAVIXARA? Proses berjalan per halaman. Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.'
     );
     if (!confirmed) return;
 
@@ -251,10 +260,12 @@ export default function Admin({ onBack }) {
         return;
       }
 
-      let jobId = null;
+      let jobId = syncJobId || null;
       let finalData = null;
       let attempts = 0;
-      const maxPagesPerRun = 1000;
+      // Batasi satu sesi supaya browser HP tetap responsif. ID pekerjaan
+      // disimpan sehingga pengguna dapat melanjutkan pada klik berikutnya.
+      const maxPagesPerRun = 25;
 
       while (attempts < maxPagesPerRun) {
         attempts += 1;
@@ -293,11 +304,25 @@ export default function Admin({ onBack }) {
           return;
         }
 
-        if (data.job_id) jobId = data.job_id;
+        if (data.job_id) {
+          jobId = data.job_id;
+          setSyncJobId(data.job_id);
+          try {
+            window.localStorage.setItem('savixara_melostore_sync_job_id', data.job_id);
+          } catch {
+            // Sinkronisasi tetap dapat berjalan jika penyimpanan browser tidak tersedia.
+          }
+        }
         finalData = data;
         setSyncResult(data);
 
         if (data.done === true || data.has_more === false) {
+          setSyncJobId('');
+          try {
+            window.localStorage.removeItem('savixara_melostore_sync_job_id');
+          } catch {
+            // Tidak menghalangi penutupan pekerjaan jika penyimpanan tidak tersedia.
+          }
           setSyncMessage(data.message || 'Sinkronisasi selesai.');
           await loadProducts();
           return;
@@ -315,7 +340,7 @@ export default function Admin({ onBack }) {
 
       setSyncResult(finalData);
       setSyncMessage(
-        `Sinkronisasi dihentikan setelah ${maxPagesPerRun} permintaan untuk menjaga halaman tetap responsif. Pekerjaan${jobId ? ` ${jobId}` : ''} dapat dilanjutkan dengan ID pekerjaan yang sama.`
+        `Sesi ini berhenti setelah ${maxPagesPerRun} permintaan agar browser tetap responsif. Pekerjaan${jobId ? ` ${jobId}` : ''} sudah disimpan dan dapat dilanjutkan dengan menekan tombol sinkronisasi lagi.`
       );
     } catch (error) {
       setSyncMessage(
@@ -615,6 +640,11 @@ export default function Admin({ onBack }) {
             {syncMessage}
           </p>
         )}
+        {!syncRunning && syncJobId && (
+          <p className="admin-message" role="status">
+            Ada pekerjaan sinkronisasi yang tersimpan dan belum selesai. Tekan tombol di atas untuk melanjutkan pekerjaan yang sama.
+          </p>
+        )}
 
         {syncResult?.summary && (
           <div>
@@ -677,7 +707,7 @@ export default function Admin({ onBack }) {
               name="category"
               value={form.category}
               onChange={updateForm}
-              placeholder="Contoh: MOBA"
+         placeholder="Contoh: MOBA"
             />
           </label>
 
@@ -843,7 +873,7 @@ export default function Admin({ onBack }) {
                         previous.map((item) =>
                           item.id === product.id
                             ? { ...item, promo_price: event.target.value }
-                            : item
+      : item
                         )
                       )
                     }
