@@ -30,6 +30,9 @@ export default function Admin({ onBack }) {
       return '';
     }
   });
+  const [dryRunRunning, setDryRunRunning] = useState(false);
+  const [dryRunMessage, setDryRunMessage] = useState('');
+  const [dryRunResult, setDryRunResult] = useState(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -234,6 +237,68 @@ export default function Admin({ onBack }) {
       );
     } finally {
       setPricelistTesting(false);
+    }
+  }
+
+
+  async function simulateMelostorePricelist() {
+    setDryRunRunning(true);
+    setDryRunMessage('Menjalankan simulasi pemetaan satu halaman...');
+    setDryRunResult(null);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        setDryRunMessage('Sesi login tidak ditemukan. Silakan login kembali.');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke(
+        'melostore-sync-pricelist',
+        {
+          body: { limit: 5, dry_run: true },
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }
+      );
+
+      if (error) {
+        let detail = error.message || 'Permintaan simulasi gagal.';
+        try {
+          const response = error.context;
+          if (response && typeof response.json === 'function') {
+            const errorBody = await response.json();
+            if (errorBody?.message) detail = errorBody.message;
+          }
+        } catch {
+          // Pertahankan pesan error awal jika respons tidak dapat dibaca.
+        }
+        setDryRunMessage('Simulasi gagal: ' + detail);
+        return;
+      }
+
+      setDryRunResult(data || null);
+      if (!data?.ok || data?.dry_run !== true || data?.catalog_changed !== false) {
+        setDryRunMessage(
+          data?.message ||
+            'Respons tidak mengonfirmasi dry-run aman. Periksa Logs Supabase; jangan jalankan sinkronisasi.'
+        );
+        return;
+      }
+
+      setDryRunMessage(
+        data.message ||
+          'Simulasi selesai. Katalog produk tidak diubah; metadata pekerjaan simulasi dicatat.'
+      );
+    } catch (error) {
+      setDryRunMessage(
+        'Simulasi gagal: ' + (error?.message || 'Kesalahan tidak diketahui.')
+      );
+    } finally {
+      setDryRunRunning(false);
     }
   }
 
@@ -629,8 +694,40 @@ export default function Admin({ onBack }) {
         </p>
         <button
           type="button"
+          onClick={simulateMelostorePricelist}
+          disabled={dryRunRunning || syncRunning}
+        >
+          {dryRunRunning ? 'Menjalankan simulasi...' : 'Simulasi Pricelist (Dry Run)'}
+        </button>
+        <p>
+          Simulasi hanya memeriksa satu halaman (maksimal 5 item). Katalog produk
+          tidak diubah, tetapi metadata pekerjaan simulasi akan dicatat dan dapat
+          berstatus paused.
+        </p>
+        {dryRunMessage && (
+          <p className="admin-message" role="status">
+            {dryRunMessage}
+          </p>
+        )}
+        {dryRunResult && (
+          <details>
+            <summary>Lihat hasil simulasi</summary>
+            <pre
+              style={{
+                overflowX: 'auto',
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {JSON.stringify(dryRunResult, null, 2)}
+            </pre>
+          </details>
+        )}
+
+        <button
+          type="button"
           onClick={syncMelostorePricelist}
-          disabled={syncRunning}
+          disabled={syncRunning || dryRunRunning}
         >
           {syncRunning ? 'Menyinkronkan katalog...' : 'Sinkronisasi Pricelist Melostore'}
         </button>
@@ -896,4 +993,6 @@ export default function Admin({ onBack }) {
       </section>
     </main>
   );
-}
+                }
+
+                
