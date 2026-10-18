@@ -35,4 +35,12 @@ jobs:
 
       - name: Run lease guard tests
         run: deno test tests/lease-guard.test.ts
+
+        
+      - name: Type-check PostgreSQL concurrency test
+        run: deno check tests/postgres-concurrency.test.ts
+
+      - name: Run PostgreSQL concurrency test
+        run: deno test tests/postgres-concurrency.test.ts
+        
         
