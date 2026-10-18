@@ -113,3 +113,46 @@ Deno.test("stale lease cannot release a newer worker lease", () => {
   );
 });
     
+Deno.test("only one concurrent request can claim a paused job", () => {
+  type Job = {
+    id: string;
+    status: "paused" | "running";
+    leaseToken: string | null;
+  };
+
+  const original: Job = {
+    id: "job-1",
+    status: "paused",
+    leaseToken: null,
+  };
+
+  function claim(
+    job: Job,
+    jobId: string,
+    token: string,
+  ): { job: Job; claimed: boolean } {
+    if (
+      job.id !== jobId ||
+      job.status !== "paused" ||
+      job.leaseToken !== null
+    ) {
+      return { job, claimed: false };
+    }
+
+    return {
+      job: {
+        ...job,
+        status: "running",
+        leaseToken: token,
+      },
+      claimed: true,
+    };
+  }
+
+  const first = claim(original, "job-1", "token-A");
+  const second = claim(first.job, "job-1", "token-B");
+
+  assertEquals(first.claimed, true);
+  assertEquals(second.claimed, false);
+  assertEquals(second.job.leaseToken, "token-A");
+});
