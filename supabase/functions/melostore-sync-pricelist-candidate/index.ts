@@ -392,27 +392,7 @@ job_id: job.id,
 message: `Pekerjaan berstatus '${job.status}' dan tidak dapat dilanjutkan.`,
 }, 409);
 }
-
-if (job.status === "paused") {
-const { data: resumed, error: resumeError } = await db
-.from("melostore_sync_jobs")
-.update({
-status: "running",
-last_error: null,
-updated_at: new Date().toISOString(),
-})
-.eq("id", job.id)
-.select("*")
-.single();
-
-if (resumeError) {
-throw new Error(
-`Gagal melanjutkan pekerjaan: ${resumeError.message}`,
-);
-}
-
-job = resumed as SyncJob;
-}
+  
 } else {
 const { data, error } = await db
 .from("melostore_sync_jobs")
