@@ -420,12 +420,15 @@ useEffect(() => {
       if (!game.id) {
         throw new Error('Game belum memiliki ID database.');
       }
-
-      const { data, error } = await supabase
+  
+     const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(
+          'id, game_id, name, slug, category, selling_price, promo_price, description, status, sort_order, category_id'
+        )
         .eq('game_id', game.id)
         .order('selling_price', { ascending: true });
+      
 
       if (error) {
         throw error;
