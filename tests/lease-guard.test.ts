@@ -74,4 +74,42 @@ Deno.test("different job ID cannot be paused", () => {
     "running",
   );
 });
+
+Deno.test("stale lease cannot release a newer worker lease", () => {
+  type Lease = {
+    id: string;
+    leaseToken: string | null;
+    leaseUntil: string | null;
+  };
+
+  const current: Lease = {
+    id: "job-1",
+    leaseToken: "token-new",
+    leaseUntil: "2030-01-01T00:00:00.000Z",
+  };
+
+  function releaseLease(
+    lease: Lease,
+    jobId: string,
+    leaseToken: string,
+  ): Lease {
+    if (
+      lease.id !== jobId ||
+      lease.leaseToken !== leaseToken
+    ) {
+      return lease;
+    }
+
+    return {
+      ...lease,
+      leaseToken: null,
+      leaseUntil: null,
+    };
+  }
+
+  assertEquals(
+    releaseLease(current, "job-1", "token-old"),
+    current,
+  );
+});
     
