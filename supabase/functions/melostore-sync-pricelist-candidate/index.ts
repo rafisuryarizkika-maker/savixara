@@ -719,50 +719,8 @@ description,
 selling_price_preview: calculateSellingPrice(price),
 });
 }
-// Dry-run: periksa hasil pemetaan tanpa mengubah katalog produk.
-// Catatan: metadata job sinkronisasi tetap diperbarui.
-if (dryRun) {
-const { error: dryRunJobError } = await db
-.from("melostore_sync_jobs")
-.update({
-status: "paused",
-last_error: "Dry-run selesai; katalog tidak diubah.",
-next_allowed_at: null,
-updated_at: new Date().toISOString(),
-})
-.eq("id", job.id)
-.eq("lease_token", activeLeaseToken);
 
-if (dryRunJobError) {
-throw new Error(
-`Simulasi selesai tetapi status job gagal dicatat: ${dryRunJobError.message}`,
-);
-}
-
-return jsonResponse({
-ok: true,
-dry_run: true,
-catalog_changed: false,
-job_id: job.id,
-message:
-"Simulasi selesai. Katalog produk tidak diubah; job simulasi ditandai paused.",
-provider_page: {
-received: rawItems.length,
-valid_for_rpc: mapped.length,
-skipped: skippedCount,
-has_more: hasMore,
-},
-preview: mapped.slice(0, 25).map((item) => ({
-sku: item.sku,
-provider_status: item.provider_status,
-cost_price: item.cost_price,
-selling_price_preview: item.selling_price_preview ?? null,
-game_id: item.game_id ?? null,
-})),
-});
-}
-
-// Perpanjang lease sebelum menulis hasil ke database.
+  // Perpanjang lease sebelum menulis hasil ke database.
 const renewedUntil = new Date(Date.now() + 120_000).toISOString();
 
 const {
