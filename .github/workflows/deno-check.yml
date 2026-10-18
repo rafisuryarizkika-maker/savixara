@@ -30,6 +30,9 @@ jobs:
       - name: Type-check lease tests
         run: deno check tests/lease-guard.test.ts
 
+      - name: Type-check Melostore candidate
+        run: deno check --all supabase/functions/melostore-sync-pricelist-candidate/index.ts
+
       - name: Run lease guard tests
         run: deno test tests/lease-guard.test.ts
         
