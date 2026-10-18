@@ -948,7 +948,7 @@ lastError: job.last_error,
 }
 
 async function pauseJob(
-db: ReturnType<typeof createClient>,
+db: any,
 jobId: string,
 leaseToken: string,
 message: string,
