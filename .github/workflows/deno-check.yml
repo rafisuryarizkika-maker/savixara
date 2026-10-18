@@ -13,9 +13,12 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install Deno
         uses: denoland/setup-deno@v2
         with:
@@ -24,6 +27,9 @@ jobs:
       - name: Verify Deno runtime
         run: deno --version
 
-      - name: Verify Deno check command
-        run: deno check --help
+      - name: Type-check lease tests
+        run: deno check tests/lease-guard.test.ts
+
+      - name: Run lease guard tests
+        run: deno test tests/lease-guard.test.ts
         
