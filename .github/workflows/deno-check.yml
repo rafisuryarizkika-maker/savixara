@@ -2,6 +2,9 @@
 name: Deno Isolated Check
 
 on:
+  push:
+    branches:
+      - audit/deno-lease-patch-20261018
   workflow_dispatch:
 
 permissions:
@@ -21,6 +24,6 @@ jobs:
       - name: Verify Deno runtime
         run: deno --version
 
-      - name: Verify TypeScript compiler
+      - name: Verify Deno check command
         run: deno check --help
         
