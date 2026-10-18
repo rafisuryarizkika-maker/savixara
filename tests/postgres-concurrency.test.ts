@@ -1,5 +1,5 @@
 
-import postgres from "npm:postgres";
+import postgres from "npm:postgres@3.4.7";
 import { assertEquals } from "jsr:@std/assert";
 
 const databaseUrl = Deno.env.get("TEST_DATABASE_URL");
