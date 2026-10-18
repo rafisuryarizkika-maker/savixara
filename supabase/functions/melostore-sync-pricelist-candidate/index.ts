@@ -540,20 +540,33 @@ const nextAllowed = new Date(
 Date.now() + retrySeconds * 1000,
 ).toISOString();
 
-const { error } = await db
-.from("melostore_sync_jobs")
-.update({
-next_allowed_at: nextAllowed,
-last_provider_request_at: requestStartedAt.toISOString(),
-updated_at: new Date().toISOString(),
-last_error: `Provider membatasi permintaan (HTTP 429); mencoba lagi setelah ${retrySeconds} detik.`,
-})
-.eq("id", job.id)
+const { data: updatedJob, error } = await db
+  .from("melostore_sync_jobs")
+  .update({
+    next_allowed_at: nextAllowed,
+    last_provider_request_at: requestStartedAt.toISOString(),
+    updated_at: new Date().toISOString(),
+    last_error: `Provider membatasi permintaan (HTTP 429); mencoba lagi setelah ${retrySeconds} detik.`,
+  })
+  .eq("id", job.id)
   .eq("lease_token", activeLeaseToken)
-  .eq("status", "running");
+  .eq("status", "running")
+  .select("id")
+  .maybeSingle();
 
 if (error) {
-console.error("Gagal mencatat jeda 429:", error.message);
+  console.error("Gagal mencatat jeda 429:", error.message);
+  throw new Error(`Gagal mencatat jeda 429: ${error.message}`);
+}
+
+if (!updatedJob) {
+  return jsonResponse({
+    ok: false,
+    waiting: false,
+    done: false,
+    job_id: job.id,
+    message: "Lease tidak lagi valid; jeda HTTP 429 tidak diterapkan.",
+  }, 409);
 }
 
 return jsonResponse({
