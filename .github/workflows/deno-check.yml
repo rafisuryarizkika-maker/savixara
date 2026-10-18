@@ -42,5 +42,5 @@ jobs:
         run: deno check tests/postgres-concurrency.test.ts
 
       - name: Run PostgreSQL concurrency test
-        run: deno test tests/postgres-concurrency.test.ts
+        run: deno test --allow-env=TEST_DATABASE_URL --allow-net tests/postgres-concurrency.test.ts
         
