@@ -209,27 +209,39 @@ Authorization: `Bearer ${accessToken}`,
 },
 },
 });
-
+  
 const { data: userData, error: userError } =
-await userClient.auth.getUser(accessToken);
+  await userClient.auth.getUser(accessToken);
 
 if (userError || !userData.user) {
-return jsonResponse({
-ok: false,
-message: "Sesi login tidak valid atau sudah kedaluwarsa.",
-}, 401);
+  return jsonResponse({
+    ok: false,
+    message: "Sesi login tidak valid atau sudah kedaluwarsa.",
+  }, 401);
+}
+
+const { data: claimsData, error: claimsError } =
+  await userClient.auth.getClaims(accessToken);
+
+if (claimsError || claimsData?.claims?.aal !== "aal2") {
+  return jsonResponse({
+    ok: false,
+    message:
+      "Autentikasi tambahan AAL2 diperlukan untuk sinkronisasi. Silakan selesaikan verifikasi MFA lalu coba kembali.",
+    requires_mfa: true,
+  }, 403);
 }
 
 const { data: isAdmin, error: adminError } =
-await userClient.rpc("is_admin");
+  await userClient.rpc("is_admin");
 
 if (adminError || isAdmin !== true) {
-return jsonResponse({
-ok: false,
-message: "Akses ditolak. Hanya admin SAVIXARA yang boleh sinkronisasi.",
-}, 403);
+  return jsonResponse({
+    ok: false,
+    message: "Akses ditolak. Hanya admin SAVIXARA yang boleh sinkronisasi.",
+  }, 403);
 }
-
+  
 const db = createClient(supabaseUrl, serviceRoleKey, {
 auth: {
 persistSession: false,
