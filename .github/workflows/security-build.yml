@@ -1,0 +1,31 @@
+
+name: SAVIXARA Security Build
+
+on:
+  push:
+    branches:
+      - security/admin-mfa-audit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build without deployment
+        run: npm run build
+        
