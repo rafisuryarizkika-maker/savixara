@@ -58,23 +58,49 @@ export default function Admin({ onBack }) {
 
     setGames(data || []);
   }
-
+  
   async function loadProducts() {
     setProductsLoading(true);
 
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('sort_order', { ascending: true });
+    try {
+      const { data: productRows, error: productsError } = await supabase
+        .from('products')
+        .select(
+          'id, game_id, name, slug, category, selling_price, promo_price, description, status, sort_order, category_id'
+        )
+        .order('sort_order', { ascending: true });
 
-    if (error) {
-      setMessage('Gagal memuat produk: ' + error.message);
+      if (productsError) {
+        setMessage('Gagal memuat produk: ' + productsError.message);
+        return;
+      }
+
+      const { data: costRows, error: costsError } = await supabase.rpc(
+        'admin_list_product_costs'
+      );
+
+      if (costsError) {
+        setMessage('Gagal memuat harga modal admin: ' + costsError.message);
+        setProducts([]);
+        return;
+      }
+
+      const costsByProductId = new Map(
+        (Array.isArray(costRows) ? costRows : []).map((row) => [
+          row.product_id,
+          row.cost_price,
+        ])
+      );
+
+      setProducts(
+        (productRows || []).map((product) => ({
+          ...product,
+          cost_price: costsByProductId.get(product.id) ?? 0,
+        }))
+      );
+    } finally {
       setProductsLoading(false);
-      return;
     }
-
-    setProducts(data || []);
-    setProductsLoading(false);
   }
 
   useEffect(() => {
@@ -415,7 +441,7 @@ export default function Admin({ onBack }) {
       setSyncRunning(false);
     }
   }
-
+  
   async function saveProduct(product) {
     setMessage('');
 
@@ -447,21 +473,39 @@ export default function Admin({ onBack }) {
     setProductSavingId(product.id);
 
     try {
-      const { error } = await supabase
+      const { error: costError } = await supabase.rpc(
+        'admin_set_product_cost',
+        {
+          p_product_id: product.id,
+          p_cost_price: costPrice,
+        }
+      );
+
+      if (costError) {
+        setMessage('Gagal menyimpan harga modal: ' + costError.message);
+        return;
+      }
+
+      const { error: sellingError } = await supabase
         .from('products')
         .update({
-          cost_price: costPrice,
           selling_price: sellingPrice,
           promo_price: promoPrice,
         })
         .eq('id', product.id);
 
-      if (error) {
-        setMessage('Gagal menyimpan harga: ' + error.message);
+      if (sellingError) {
+        setMessage(
+          'Harga modal tersimpan, tetapi harga jual/promo gagal disimpan: ' +
+            sellingError.message
+        );
+        await loadProducts();
         return;
       }
 
-      setMessage('Harga produk berhasil diperbarui.');
+      setMessage(
+        'Harga modal, harga jual, dan harga promo berhasil diperbarui.'
+      );
       await loadProducts();
     } finally {
       setProductSavingId(null);
