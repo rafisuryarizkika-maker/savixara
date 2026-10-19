@@ -724,23 +724,25 @@ description,
 selling_price_preview: calculateSellingPrice(price),
 });
 }
-
-  // Perpanjang lease sebelum menulis hasil ke database.
+  
+  // Perpanjang lease hanya jika lease lama masih berlaku.
+const leaseCheckTime = new Date().toISOString();
 const renewedUntil = new Date(Date.now() + 120_000).toISOString();
 
 const {
-data: renewedLease,
-error: renewError,
+  data: renewedLease,
+  error: renewError,
 } = await db
-.from("melostore_sync_jobs")
-.update({
-lease_until: renewedUntil,
-updated_at: new Date().toISOString(),
-})
-.eq("id", job.id)
-.eq("lease_token", activeLeaseToken)
-.select("id")
-.maybeSingle();
+  .from("melostore_sync_jobs")
+  .update({
+    lease_until: renewedUntil,
+    updated_at: new Date().toISOString(),
+  })
+  .eq("id", job.id)
+  .eq("lease_token", activeLeaseToken)
+  .gt("lease_until", leaseCheckTime)
+  .select("id")
+  .maybeSingle();
 
 if (renewError) {
 throw new Error(
