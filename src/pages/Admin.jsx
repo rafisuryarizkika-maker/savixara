@@ -305,7 +305,7 @@ export default function Admin({ onBack }) {
   async function syncMelostorePricelist() {
     const confirmed = window.confirm(
       syncJobId
-        ? `Lanjutkan pekerjaan sinkronisasi Melostore yang tersimpan (${syncJobId})? Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.`
+        ? `Lanjutkan pemeriksaan pekerjaan sinkronisasi Melostore yang tersimpan (${syncJobId})? Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.`
         : 'Mulai pekerjaan sinkronisasi katalog Melostore ke database SAVIXARA? Proses berjalan per halaman. Produk baru dibuat nonaktif dengan harga jual Rp0; harga jual dan promo produk lama dipertahankan.'
     );
     if (!confirmed) return;
@@ -328,84 +328,131 @@ export default function Admin({ onBack }) {
       let jobId = syncJobId || null;
       let finalData = null;
       let attempts = 0;
-      // Batasi satu sesi supaya browser HP tetap responsif. ID pekerjaan
-      // disimpan sehingga pengguna dapat melanjutkan pada klik berikutnya.
+      let resumePaused = false;
       const maxPagesPerRun = 25;
 
       while (attempts < maxPagesPerRun) {
         attempts += 1;
         setSyncMessage(
           jobId
-            ? `Melanjutkan sinkronisasi Melostore (permintaan ke-${attempts})...`
+            ? `Melanjutkan pemeriksaan pekerjaan Melostore (permintaan ke-${attempts})...`
             : 'Memulai pekerjaan sinkronisasi Melostore...'
         );
+
+        const requestBody = jobId
+          ? { limit: 500, job_id: jobId, ...(resumePaused ? { resume_paused: true } : {}) }
+          : { limit: 500 };
 
         const { data, error } = await supabase.functions.invoke(
           'melostore-sync-pricelist',
           {
-            body: jobId ? { limit: 500, job_id: jobId } : { limit: 500 },
+            body: requestBody,
             headers: { Authorization: `Bearer ${session.access_token}` },
           }
         );
 
+        let responseData = data || null;
         if (error) {
-          let detail = error.message || 'Permintaan fungsi gagal.';
           try {
             const response = error.context;
             if (response && typeof response.json === 'function') {
               const errorBody = await response.json();
-              if (errorBody?.message) detail = errorBody.message;
+              if (errorBody && typeof errorBody === 'object') {
+                responseData = errorBody;
+              }
             }
           } catch {
-            // Pertahankan pesan error awal jika respons tidak dapat dibaca.
+            // Gunakan pesan error awal jika body respons tidak dapat dibaca.
           }
-          setSyncMessage('Sinkronisasi berhenti: ' + detail + '. Periksa Logs di Supabase sebelum mencoba lagi.');
-          return;
+
+          if (!responseData?.requires_resume && !responseData?.active_job_exists) {
+            const detail = responseData?.message || error.message || 'Permintaan fungsi gagal.';
+            setSyncResult(responseData);
+            setSyncMessage('Sinkronisasi berhenti: ' + detail + '. Periksa Logs di Supabase sebelum mencoba lagi.');
+            return;
+          }
         }
 
-        if (!data?.ok) {
-          setSyncResult(data || null);
-          setSyncMessage(data?.message || 'Sinkronisasi gagal. Periksa Logs di Supabase.');
-          return;
-        }
-
-        if (data.job_id) {
-          jobId = data.job_id;
-          setSyncJobId(data.job_id);
+        if (responseData?.job_id) {
+          jobId = responseData.job_id;
+          setSyncJobId(responseData.job_id);
           try {
-            window.localStorage.setItem('savixara_melostore_sync_job_id', data.job_id);
+            window.localStorage.setItem('savixara_melostore_sync_job_id', responseData.job_id);
           } catch {
             // Sinkronisasi tetap dapat berjalan jika penyimpanan browser tidak tersedia.
           }
         }
-        finalData = data;
-        setSyncResult(data);
 
-        if (data.done === true || data.has_more === false) {
+        if (responseData?.requires_resume === true) {
+          if (resumePaused) {
+            setSyncResult(responseData);
+            setSyncMessage(
+              'Server masih meminta konfirmasi pelanjutan setelah konfirmasi dikirim. Proses dihentikan agar tidak mengulang permintaan tanpa batas; periksa kontrak fungsi kandidat.'
+            );
+            return;
+          }
+
+          const resumeConfirmed = window.confirm(
+            `Pekerjaan ${responseData.job_id || jobId || ''} sedang dijeda. Apakah kamu ingin melanjutkan pekerjaan yang sama? Tidak ada pekerjaan baru yang akan dibuat.`
+          );
+          if (!resumeConfirmed) {
+            setSyncResult(responseData);
+            setSyncMessage('Pekerjaan tetap dijeda. Tidak ada pelanjutan yang dilakukan.');
+            return;
+          }
+          resumePaused = true;
+          attempts -= 1;
+          continue;
+        }
+
+        if (responseData?.active_job_exists === true) {
+          setSyncResult(responseData);
+          const activeStatus = responseData.job_status || 'tidak diketahui';
+          setSyncMessage(
+            `Ditemukan pekerjaan aktif (${activeStatus})${responseData.job_id ? ` dengan ID ${responseData.job_id}` : ''}. Pekerjaan baru tidak dibuat. Periksa status pekerjaan sebelum mencoba lagi.`
+          );
+          return;
+        }
+
+        if (error) {
+          setSyncResult(responseData);
+          setSyncMessage(responseData?.message || error.message || 'Permintaan fungsi gagal.');
+          return;
+        }
+
+        if (!responseData?.ok) {
+          setSyncResult(responseData || null);
+          setSyncMessage(responseData?.message || 'Sinkronisasi gagal. Periksa Logs di Supabase.');
+          return;
+        }
+
+        finalData = responseData;
+        setSyncResult(responseData);
+
+        if (responseData.done === true || responseData.has_more === false) {
           setSyncJobId('');
           try {
             window.localStorage.removeItem('savixara_melostore_sync_job_id');
           } catch {
             // Tidak menghalangi penutupan pekerjaan jika penyimpanan tidak tersedia.
           }
-          setSyncMessage(data.message || 'Sinkronisasi selesai.');
+          setSyncMessage(responseData.message || 'Sinkronisasi selesai.');
           await loadProducts();
           return;
         }
 
-        // Wait for the provider's safe interval before requesting the next page.
-        const requestedWait = Number(data.wait_ms ?? 3200);
+        const requestedWait = Number(responseData.wait_ms ?? 3200);
         const waitMs = Math.min(Math.max(requestedWait, 1000), 300000);
         const waitSeconds = Math.ceil(waitMs / 1000);
         setSyncMessage(
-          `${data.message || 'Halaman berhasil diproses.'} Melanjutkan dalam ${waitSeconds} detik. Progres: ${JSON.stringify(data.summary || {})}`
+          `${responseData.message || 'Halaman berhasil diproses.'} Melanjutkan dalam ${waitSeconds} detik. Progres: ${JSON.stringify(responseData.summary || {})}`
         );
         await new Promise((resolve) => window.setTimeout(resolve, waitMs));
       }
 
       setSyncResult(finalData);
       setSyncMessage(
-        `Sesi ini berhenti setelah ${maxPagesPerRun} permintaan agar browser tetap responsif. Pekerjaan${jobId ? ` ${jobId}` : ''} sudah disimpan dan dapat dilanjutkan dengan menekan tombol sinkronisasi lagi.`
+        `Sesi ini berhenti setelah ${maxPagesPerRun} permintaan agar browser tetap responsif. Pekerjaan${jobId ? ` ${jobId}` : ''} tetap tersimpan dan dapat diperiksa kembali.`
       );
     } catch (error) {
       setSyncMessage(
@@ -651,7 +698,7 @@ export default function Admin({ onBack }) {
         )}
 
         {pricelistMeta && (
-          <div>
+         <div>
             <h3>Metadata Pricelist</h3>
             <p>
               Bagian ini dapat berisi informasi pagination dari provider,
@@ -893,7 +940,7 @@ export default function Admin({ onBack }) {
               </button>
             </div>
           </article>
-        ))}
+      ))}
       </section>
 
       <section className="admin-panel">
@@ -993,6 +1040,4 @@ export default function Admin({ onBack }) {
       </section>
     </main>
   );
-                }
-
-                
+}
