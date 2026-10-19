@@ -397,12 +397,22 @@ summary: jobSummary(job),
 });
 }
 
+if (job.status === "paused" && payload.resume_paused !== true) {
+  return jsonResponse({
+    ok: false,
+    requires_resume: true,
+    job_id: job.id,
+    message:
+      "Pekerjaan sedang dijeda. Konfirmasi eksplisit diperlukan sebelum melanjutkan.",
+  });
+}
+
 if (!["pending", "running", "paused"].includes(job.status)) {
-return jsonResponse({
-ok: false,
-job_id: job.id,
-message: `Pekerjaan berstatus '${job.status}' dan tidak dapat dilanjutkan.`,
-}, 409);
+  return jsonResponse({
+    ok: false,
+    job_id: job.id,
+    message: `Pekerjaan berstatus '${job.status}' dan tidak dapat dilanjutkan.`,
+  }, 409);
 }
   
 } else {
@@ -425,9 +435,34 @@ last_error: null,
 .single();
 
 if (error) {
-throw new Error(
-`Gagal membuat pekerjaan sinkronisasi: ${error.message}`,
-);
+  if (error.code === "23505") {
+    const { data: activeJob, error: activeJobError } = await db
+      .from("melostore_sync_jobs")
+      .select("id, status")
+      .in("status", ["pending", "running", "paused"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (activeJobError) {
+      throw new Error(
+        `Konflik pekerjaan aktif terjadi, tetapi pekerjaan yang ada gagal dibaca: ${activeJobError.message}`,
+      );
+    }
+
+    return jsonResponse({
+      ok: false,
+      active_job_exists: true,
+      job_id: activeJob?.id ?? null,
+      job_status: activeJob?.status ?? null,
+      message:
+        "Pembuatan pekerjaan baru ditolak karena sudah ada pekerjaan aktif. Periksa pekerjaan tersebut sebelum melanjutkan.",
+    });
+  }
+
+  throw new Error(
+    `Gagal membuat pekerjaan sinkronisasi: ${error.message}`,
+  );
 }
 
 job = data as SyncJob;
