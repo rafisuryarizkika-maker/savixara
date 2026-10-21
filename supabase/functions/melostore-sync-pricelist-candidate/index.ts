@@ -868,23 +868,53 @@ job_id: job.id,
 }
 
 if (applyResult?.duplicate_page === true) {
-const { data: duplicateJob } = await db
-.from("melostore_sync_jobs")
-.select("*")
-.eq("id", job.id)
-.maybeSingle();
+  const duplicateNextAllowedAt = hasMore
+    ? new Date(Date.now() + PROVIDER_DELAY_MS).toISOString()
+    : null;
+  const duplicateUpdateTime = new Date().toISOString();
 
-return jsonResponse({
-ok: true,
-duplicate_page: true,
-job_id: job.id,
-wait_ms: PROVIDER_DELAY_MS,
-summary: duplicateJob
-? jobSummary(duplicateJob as SyncJob)
-: null,
-message:
-"Halaman ini sudah pernah diproses; tidak diterapkan ulang.",
-});
+  const {
+    data: duplicateJob,
+    error: duplicateRefreshError,
+  } = await db
+    .from("melostore_sync_jobs")
+    .update({
+      last_provider_request_at: requestStartedAt.toISOString(),
+      next_allowed_at: duplicateNextAllowedAt,
+      updated_at: duplicateUpdateTime,
+      last_error: null,
+    })
+    .eq("id", job.id)
+    .eq("lease_token", activeLeaseToken)
+    .gt("lease_until", duplicateUpdateTime)
+    .select("*")
+    .maybeSingle();
+
+  if (duplicateRefreshError) {
+    throw new Error(
+      `Gagal memperbarui metadata halaman duplikat: ${duplicateRefreshError.message}`,
+    );
+  }
+
+  if (!duplicateJob) {
+    return jsonResponse({
+      ok: false,
+      duplicate_page: true,
+      job_id: job.id,
+      message:
+        "Halaman sudah diterapkan sebelumnya, tetapi metadata jeda tidak diperbarui karena lease tidak lagi valid. Periksa progres pekerjaan sebelum mencoba ulang.",
+    }, 409);
+  }
+
+  return jsonResponse({
+    ok: true,
+    duplicate_page: true,
+    job_id: job.id,
+    wait_ms: waitMsFromDate(duplicateJob.next_allowed_at),
+    summary: jobSummary(duplicateJob as SyncJob),
+    message:
+      "Halaman ini sudah pernah diproses; tidak diterapkan ulang.",
+  });
 }
 
 const nextAllowedAt = hasMore
