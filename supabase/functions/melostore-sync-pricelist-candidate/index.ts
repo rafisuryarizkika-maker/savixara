@@ -279,15 +279,25 @@ const dryRun = payload.dry_run === true;
 if (dryRun) {
 const previewUrl = new URL(PROVIDER_URL);
 previewUrl.searchParams.set("limit", String(Math.min(pageSize, 5)));
-const previewResponse = await fetch(previewUrl.toString(), {
-method: "GET",
-headers: {
-Accept: "application/json",
-"X-API-Key": apiKey,
-"X-Secret-Key": secretKey,
-},
-signal: AbortSignal.timeout(25_000),
-});
+let previewResponse: Response;
+try {
+  previewResponse = await fetch(previewUrl.toString(), {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "X-API-Key": apiKey,
+      "X-Secret-Key": secretKey,
+    },
+    signal: AbortSignal.timeout(25_000),
+  });
+} catch (error) {
+  return jsonResponse({
+    ok: false,
+    dry_run: true,
+    catalog_changed: false,
+    message: `Permintaan simulasi ke Melostore gagal: ${error instanceof Error ? error.message : "kesalahan jaringan"}`,
+  }, 502);
+}
 const previewText = await previewResponse.text();
 if (previewResponse.status === 429) {
   const rawRetryAfter = Number(previewResponse.headers.get("Retry-After") ?? "60");
@@ -457,7 +467,7 @@ if (error) {
       job_status: activeJob?.status ?? null,
       message:
         "Pembuatan pekerjaan baru ditolak karena sudah ada pekerjaan aktif. Periksa pekerjaan tersebut sebelum melanjutkan.",
-    });
+    }, 409);
   }
 
   throw new Error(
@@ -598,6 +608,7 @@ const { data: updatedJob, error } = await db
   .eq("id", job.id)
   .eq("lease_token", activeLeaseToken)
   .eq("status", "running")
+  .gt("lease_until", new Date().toISOString())
   .select("id")
   .maybeSingle();
 
@@ -631,13 +642,21 @@ summary: jobSummary(job),
 try {
 providerData = responseText ? JSON.parse(responseText) : {};
 } catch {
-await pauseJob(db, job.id, activeLeaseToken, "Respons Melostore bukan JSON yang valid.");
+const paused = await pauseJob(
+  db,
+  job.id,
+  activeLeaseToken,
+  "Respons Melostore bukan JSON yang valid.",
+);
 
 return jsonResponse({
-ok: false,
-job_id: job.id,
-message: `Respons Melostore bukan JSON yang valid (HTTP ${providerResponse.status}).`,
-});
+  ok: false,
+  job_id: job.id,
+  paused,
+  message: paused
+    ? `Respons Melostore bukan JSON yang valid (HTTP ${providerResponse.status}); pekerjaan dijeda.`
+    : `Respons Melostore bukan JSON yang valid (HTTP ${providerResponse.status}), tetapi pekerjaan tidak berhasil dijeda karena lease tidak lagi valid. Periksa status pekerjaan sebelum melanjutkan.`,
+}, paused ? 502 : 409);
 }
 
 if (!providerResponse.ok) {
@@ -645,13 +664,16 @@ const message =
 `Melostore menolak permintaan (HTTP ${providerResponse.status}): ` +
 String(providerData?.message ?? "tanpa detail");
 
-await pauseJob(db, job.id, activeLeaseToken, message);
+const paused = await pauseJob(db, job.id, activeLeaseToken, message);
 
 return jsonResponse({
-ok: false,
-job_id: job.id,
-message,
-});
+  ok: false,
+  job_id: job.id,
+  paused,
+  message: paused
+    ? `${message} Pekerjaan dijeda.`
+    : `${message} Namun pekerjaan tidak berhasil dijeda karena lease tidak lagi valid; periksa status sebelum melanjutkan.`,
+}, paused ? 502 : 409);
 }
 
 if (
@@ -663,13 +685,16 @@ const message =
 `Respons pricelist Melostore tidak valid: ` +
 String(providerData?.message ?? "format data tidak sesuai");
 
-await pauseJob(db, job.id, activeLeaseToken, message);
+const paused = await pauseJob(db, job.id, activeLeaseToken, message);
 
 return jsonResponse({
-ok: false,
-job_id: job.id,
-message,
-});
+  ok: false,
+  job_id: job.id,
+  paused,
+  message: paused
+    ? `${message} Pekerjaan dijeda.`
+    : `${message} Namun pekerjaan tidak berhasil dijeda karena lease tidak lagi valid; periksa status sebelum melanjutkan.`,
+}, paused ? 502 : 409);
 }
 
 const rawItems = providerData.data as MelostoreProduct[];
@@ -685,13 +710,16 @@ if (hasMore && (!nextCursor || nextCursor === job.cursor)) {
 const message =
 "Melostore menyatakan masih ada halaman, tetapi cursor berikutnya kosong atau tidak berubah. Pekerjaan dijeda untuk mencegah loop.";
 
-await pauseJob(db, job.id, activeLeaseToken, message);
+const paused = await pauseJob(db, job.id, activeLeaseToken, message);
 
 return jsonResponse({
-ok: false,
-job_id: job.id,
-message,
-});
+  ok: false,
+  job_id: job.id,
+  paused,
+  message: paused
+    ? `${message} Pekerjaan dijeda.`
+    : `${message} Namun pekerjaan tidak berhasil dijeda karena lease tidak lagi valid; periksa status sebelum melanjutkan.`,
+}, paused ? 502 : 409);
 }
 const mapped: Record<string, unknown>[] = [];
 const seenSkus = new Set<string>();
@@ -864,13 +892,22 @@ last_error: null,
 })
 .eq("id", job.id)
 .eq("lease_token", activeLeaseToken)
+.gt("lease_until", new Date().toISOString())
 .select("*")
-.single();
+.maybeSingle();
 
-if (refreshError) {
+  if (refreshError) {
 throw new Error(
 `Gagal memperbarui status job: ${refreshError.message}`,
 );
+}
+
+if (!refreshed) {
+return jsonResponse({
+ok: false,
+job_id: job.id,
+message: "Halaman sudah diterapkan oleh RPC, tetapi pembaruan metadata ditolak karena lease tidak lagi valid. Periksa progres pekerjaan sebelum mencoba ulang.",
+}, 409);
 }
 
 const refreshedJob = refreshed as SyncJob;
@@ -964,6 +1001,7 @@ next_allowed_at: null,
 .eq("id", jobId)
 .eq("lease_token", leaseToken)
 .eq("status", "running")
+.gt("lease_until", new Date().toISOString())
 .select("id")
 .maybeSingle();
 
