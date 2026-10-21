@@ -5,17 +5,20 @@ type Job = {
   id: string;
   leaseToken: string;
   status: "running" | "paused" | "completed";
+  leaseUntil: string;
 };
 
 function pauseJob(
   job: Job,
   jobId: string,
   leaseToken: string,
+  now: string,
 ): Job {
   if (
     job.id !== jobId ||
     job.leaseToken !== leaseToken ||
-    job.status !== "running"
+    job.status !== "running" ||
+    Date.parse(job.leaseUntil) <= Date.parse(now)
   ) {
     return job;
   }
@@ -28,10 +31,11 @@ Deno.test("matching lease can pause a running job", () => {
     id: "job-1",
     leaseToken: "token-1",
     status: "running",
+    leaseUntil: "2030-01-01T00:00:00.000Z",
   };
 
   assertEquals(
-    pauseJob(job, "job-1", "token-1").status,
+    pauseJob(job, "job-1", "token-1", "2029-01-01T00:00:00.000Z").status,
     "paused",
   );
 });
@@ -41,10 +45,25 @@ Deno.test("stale lease cannot pause a job", () => {
     id: "job-1",
     leaseToken: "token-new",
     status: "running",
+    leaseUntil: "2030-01-01T00:00:00.000Z",
   };
 
   assertEquals(
-    pauseJob(job, "job-1", "token-old").status,
+    pauseJob(job, "job-1", "token-old", "2029-01-01T00:00:00.000Z").status,
+    "running",
+  );
+});
+
+Deno.test("expired lease cannot pause a running job", () => {
+  const job: Job = {
+    id: "job-1",
+    leaseToken: "token-1",
+    status: "running",
+    leaseUntil: "2029-01-01T00:00:00.000Z",
+  };
+
+  assertEquals(
+    pauseJob(job, "job-1", "token-1", "2030-01-01T00:00:00.000Z").status,
     "running",
   );
 });
@@ -54,10 +73,11 @@ Deno.test("completed job stays completed", () => {
     id: "job-1",
     leaseToken: "token-1",
     status: "completed",
+    leaseUntil: "2030-01-01T00:00:00.000Z",
   };
 
   assertEquals(
-    pauseJob(job, "job-1", "token-1").status,
+    pauseJob(job, "job-1", "token-1", "2029-01-01T00:00:00.000Z").status,
     "completed",
   );
 });
@@ -67,10 +87,11 @@ Deno.test("different job ID cannot be paused", () => {
     id: "job-1",
     leaseToken: "token-1",
     status: "running",
+    leaseUntil: "2030-01-01T00:00:00.000Z",
   };
 
   assertEquals(
-    pauseJob(job, "job-other", "token-1").status,
+    pauseJob(job, "job-other", "token-1", "2029-01-01T00:00:00.000Z").status,
     "running",
   );
 });
@@ -156,3 +177,4 @@ Deno.test("only one concurrent request can claim a paused job", () => {
   assertEquals(second.claimed, false);
   assertEquals(second.job.leaseToken, "token-A");
 });
+    
