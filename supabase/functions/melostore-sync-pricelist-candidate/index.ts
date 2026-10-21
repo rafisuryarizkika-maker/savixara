@@ -846,7 +846,19 @@ if (applyError) {
 const message =
 `Gagal menerapkan halaman pricelist: ${applyError.message}`;
 
-await pauseJob(db, job.id, activeLeaseToken, message);
+const paused = await pauseJob(db, job.id, activeLeaseToken, message);
+
+if (!paused) {
+
+  console.error(
+
+    "Pekerjaan tidak berhasil dijeda setelah RPC gagal; lease mungkin sudah tidak valid.",
+
+    { jobId: job.id },
+
+  );
+
+}
 
 return jsonResponse({
 ok: false,
@@ -938,7 +950,18 @@ if (leasedJobId && activeLeaseToken) {
 const errorMessage = error instanceof Error
 ? error.message
 : String(error);
-await pauseJob(db, leasedJobId, activeLeaseToken, errorMessage);
+const paused = await pauseJob(
+  db,
+  leasedJobId,
+  activeLeaseToken,
+  errorMessage,
+);
+if (!paused) {
+  console.error(
+    "Pekerjaan tidak berhasil dijeda setelah kesalahan; lease mungkin sudah tidak valid.",
+    { jobId: leasedJobId },
+  );
+}
 }
 
 return jsonResponse({
@@ -961,7 +984,7 @@ updated_at: new Date().toISOString(),
 
 if (releaseError) {
 console.error(
-"Gagal melepas lease sinkronisasi:",
+  "Gagal melepas lease sinkronisasi:",
 releaseError.message,
 );
 }
