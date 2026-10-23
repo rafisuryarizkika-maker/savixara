@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION public.melostore_apply_sync_page(p_job_id uuid, p_lea
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO 'public'
+SET search_path TO ''
 AS $function$
 DECLARE
 item jsonb;
@@ -252,7 +252,7 @@ p_skipped integer
 ) RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO public
+SET search_path TO ''
 AS $wrapper$
 DECLARE
 current_lease_token uuid;
