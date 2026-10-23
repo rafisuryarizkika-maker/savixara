@@ -1,0 +1,125 @@
+
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SAVIXARA — Uji Konkurensi</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 600px;
+      margin: 32px auto;
+      padding: 16px;
+      background: #0b1020;
+      color: #f4f7ff;
+    }
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+    }
+    input { background: #172033; color: white; border: 1px solid #39445c; }
+    button { background: #3458ee; color: white; border: 0; font-weight: 600; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #172033; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>SAVIXARA — Uji Konkurensi</h1>
+  <p>Lingkungan pengujian terpisah.</p>
+
+  <label for="email">Email admin uji</label>
+  <input id="email" type="email" autocomplete="username">
+
+  <label for="password">Password admin uji</label>
+  <input id="password" type="password" autocomplete="current-password">
+
+  <button id="login">Login ke proyek uji</button>
+  <button id="run" disabled>Jalankan uji konkurensi</button>
+  <button id="logout" disabled>Keluar</button>
+
+  <pre id="result">Belum ada pengujian.</pre>
+
+  <script type="module">
+    import { createClient } from
+      "https://esm.sh/@supabase/supabase-js@2";
+
+    const URL = "https://bumoiebziefburtmisnn.supabase.co";
+    const PUBLISHABLE_KEY = "sb_publishable_2jHWucsQvNqEiLLk9Re3aA_n0JFVr42";
+
+    const supabase = createClient(URL, PUBLISHABLE_KEY);
+    const result = document.getElementById("result");
+    const loginButton = document.getElementById("login");
+    const runButton = document.getElementById("run");
+    const logoutButton = document.getElementById("logout");
+
+    function show(message) {
+      result.textContent = message;
+    }
+
+    async function refreshSession() {
+      const { data, error } = await supabase.auth.getUser();
+      const isLoggedIn = Boolean(data?.user);
+
+      runButton.disabled = !isLoggedIn;
+      logoutButton.disabled = !isLoggedIn;
+
+      if (error && !isLoggedIn) show("Silakan login ke proyek uji.");
+      else if (isLoggedIn) show("Login berhasil: " + data.user.email);
+    }
+
+    loginButton.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      show("Memeriksa login...");
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      document.getElementById("password").value = "";
+
+      if (error) {
+        show("Login gagal: " + error.message);
+        return;
+      }
+
+      await refreshSession();
+    });
+
+    runButton.addEventListener("click", async () => {
+      runButton.disabled = true;
+      show("Menjalankan uji...");
+
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "savixara-concurrency-test-temp",
+          { body: { confirm: "run-concurrency-test" } }
+        );
+
+        if (error) {
+          show("Permintaan gagal. Periksa tab Logs di Supabase. " + error.message);
+        } else {
+          show(JSON.stringify(data, null, 2));
+        }
+      } catch (error) {
+        show("Terjadi kesalahan: " + error.message);
+      } finally {
+        await refreshSession();
+      }
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      runButton.disabled = true;
+      logoutButton.disabled = true;
+      show("Sudah keluar dari sesi uji.");
+    });
+
+    refreshSession();
+  </script>
+</body>
+</html>
