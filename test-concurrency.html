@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SAVIXARA — Uji Konkurensi</title>
+
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -14,6 +15,7 @@
       background: #0b1020;
       color: #f4f7ff;
     }
+
     input, button {
       box-sizing: border-box;
       width: 100%;
@@ -21,105 +23,214 @@
       margin: 8px 0;
       border-radius: 8px;
     }
-    input { background: #172033; color: white; border: 1px solid #39445c; }
-    button { background: #3458ee; color: white; border: 0; font-weight: 600; }
-    pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #172033; padding: 12px; border-radius: 8px; }
+
+    input {
+      background: #172033;
+      color: white;
+      border: 1px solid #39445c;
+    }
+
+    button {
+      background: #3458ee;
+      color: white;
+      border: 0;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #172033;
+      padding: 12px;
+      border-radius: 8px;
+      min-height: 80px;
+    }
   </style>
 </head>
+
 <body>
   <h1>SAVIXARA — Uji Konkurensi</h1>
   <p>Lingkungan pengujian terpisah.</p>
 
   <label for="email">Email admin uji</label>
-  <input id="email" type="email" autocomplete="username">
+  <input
+    id="email"
+    type="email"
+    autocomplete="username"
+  >
 
   <label for="password">Password admin uji</label>
-  <input id="password" type="password" autocomplete="current-password">
+  <input
+    id="password"
+    type="password"
+    autocomplete="current-password"
+  >
 
   <button id="login">Login ke proyek uji</button>
   <button id="run" disabled>Jalankan uji konkurensi</button>
   <button id="logout" disabled>Keluar</button>
 
-  <pre id="result">Belum ada pengujian.</pre>
+  <h3>Hasil pengujian</h3>
+  <pre id="result" aria-live="polite">Belum ada pengujian.</pre>
 
   <script type="module">
     import { createClient } from
       "https://esm.sh/@supabase/supabase-js@2";
 
-    const URL = "https://bumoiebziefburtmisnn.supabase.co";
-    const PUBLISHABLE_KEY = "sb_publishable_2jHWucsQvNqEiLLk9Re3aA_n0JFVr42";
+    // Khusus proyek Supabase pengujian.
+    const URL =
+      "https://bumoiebziefburtmisnn.supabase.co";
+
+    const PUBLISHABLE_KEY =
+      "sb_publishable_2jHWucsQvNqEiLLk9Re3aA_n0JFVr42";
 
     const supabase = createClient(URL, PUBLISHABLE_KEY);
+
     const result = document.getElementById("result");
     const loginButton = document.getElementById("login");
     const runButton = document.getElementById("run");
     const logoutButton = document.getElementById("logout");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
 
     function show(message) {
       result.textContent = message;
     }
 
-    async function refreshSession() {
+    // Periksa sesi dan perbarui tombol.
+    // showStatus=false mencegah hasil tes tertimpa pesan login.
+    async function refreshSession({ showStatus = true } = {}) {
       const { data, error } = await supabase.auth.getUser();
       const isLoggedIn = Boolean(data?.user);
 
       runButton.disabled = !isLoggedIn;
       logoutButton.disabled = !isLoggedIn;
+      loginButton.disabled = isLoggedIn;
 
-      if (error && !isLoggedIn) show("Silakan login ke proyek uji.");
-      else if (isLoggedIn) show("Login berhasil: " + data.user.email);
+      if (showStatus) {
+        if (error && !isLoggedIn) {
+          show("Silakan login ke proyek uji.");
+        } else if (isLoggedIn) {
+          show("Login berhasil: " + data.user.email);
+        }
+      }
+
+      return isLoggedIn;
     }
 
+    // Login ke akun admin proyek pengujian.
     loginButton.addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
 
-      show("Memeriksa login...");
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      document.getElementById("password").value = "";
-
-      if (error) {
-        show("Login gagal: " + error.message);
+      if (!email || !password) {
+        show("Masukkan email dan password akun pengujian.");
         return;
       }
 
-      await refreshSession();
+      loginButton.disabled = true;
+      show("Memeriksa login...");
+
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        // Jangan biarkan password tertinggal di kolom.
+        passwordInput.value = "";
+
+        if (error) {
+          show("Login gagal: " + error.message);
+          loginButton.disabled = false;
+          return;
+        }
+
+        await refreshSession();
+      } catch (error) {
+        passwordInput.value = "";
+        loginButton.disabled = false;
+        show("Terjadi kesalahan login: " + error.message);
+      }
     });
 
+    // Jalankan tes konkurensi di proyek pengujian.
     runButton.addEventListener("click", async () => {
       runButton.disabled = true;
-      show("Menjalankan uji...");
+      loginButton.disabled = true;
+      show("Menjalankan uji konkurensi. Mohon tunggu...");
 
       try {
         const { data, error } = await supabase.functions.invoke(
           "savixara-concurrency-test-temp",
-          { body: { confirm: "run-concurrency-test" } }
+          {
+            body: {
+              confirm: "run-concurrency-test"
+            }
+          }
         );
 
         if (error) {
-          show("Permintaan gagal. Periksa tab Logs di Supabase. " + error.message);
+          show(
+            "Permintaan gagal.\n\n" +
+            "Pesan: " + error.message +
+            "\n\nPeriksa tab Logs pada proyek Supabase pengujian."
+          );
         } else {
+          // Pertahankan hasil lengkap di layar.
           show(JSON.stringify(data, null, 2));
         }
       } catch (error) {
-        show("Terjadi kesalahan: " + error.message);
+        show(
+          "Terjadi kesalahan saat menjalankan tes:\n" +
+          (error?.message || String(error))
+        );
       } finally {
-        await refreshSession();
+        // Hanya perbarui sesi dan status tombol.
+        // Jangan timpa JSON atau pesan error di layar.
+        try {
+          await refreshSession({ showStatus: false });
+        } catch {
+          // Hasil tes yang sudah ditampilkan tetap dipertahankan.
+          runButton.disabled = true;
+          loginButton.disabled = false;
+        }
       }
     });
 
+    // Keluar dari akun pengujian.
     logoutButton.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      runButton.disabled = true;
       logoutButton.disabled = true;
-      show("Sudah keluar dari sesi uji.");
+      runButton.disabled = true;
+
+      try {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          show("Gagal keluar: " + error.message);
+          await refreshSession({ showStatus: false });
+          return;
+        }
+
+        loginButton.disabled = false;
+        runButton.disabled = true;
+        logoutButton.disabled = true;
+        show("Sudah keluar dari sesi pengujian.");
+      } catch (error) {
+        show("Terjadi kesalahan saat keluar: " + error.message);
+        await refreshSession({ showStatus: false });
+      }
     });
 
-    refreshSession();
+    // Periksa sesi saat halaman dibuka.
+    refreshSession().catch(() => {
+      show("Sesi belum tersedia. Silakan login ke proyek uji.");
+    });
   </script>
 </body>
 </html>
