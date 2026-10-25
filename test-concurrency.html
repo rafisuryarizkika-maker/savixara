@@ -98,8 +98,23 @@
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
 
-    function show(message) {
+    // Hasil disimpan sementara di sesi tab; kredensial/token tidak disimpan di sini.
+    const RESULT_STORAGE_KEY = "savixara_concurrency_test_result_v1";
+
+    function readSavedResult() {
+      try { return sessionStorage.getItem(RESULT_STORAGE_KEY); }
+      catch { return null; }
+    }
+
+    function clearSavedResult() {
+      try { sessionStorage.removeItem(RESULT_STORAGE_KEY); } catch {}
+    }
+
+    function show(message, { persist = false } = {}) {
       result.textContent = message;
+      if (persist) {
+        try { sessionStorage.setItem(RESULT_STORAGE_KEY, message); } catch {}
+      }
     }
 
     // Periksa sesi dan perbarui tombol.
@@ -163,6 +178,7 @@
     runButton.addEventListener("click", async () => {
       runButton.disabled = true;
       loginButton.disabled = true;
+      clearSavedResult();
       show("Menjalankan uji konkurensi. Mohon tunggu...");
 
       try {
@@ -179,16 +195,18 @@
           show(
             "Permintaan gagal.\n\n" +
             "Pesan: " + error.message +
-            "\n\nPeriksa tab Logs pada proyek Supabase pengujian."
+            "\n\nPeriksa log proyek Supabase pengujian jika tersedia.",
+            { persist: true }
           );
         } else {
-          // Pertahankan hasil lengkap di layar.
-          show(JSON.stringify(data, null, 2));
+          // Pertahankan hasil lengkap di layar dan sesi tab.
+          show(JSON.stringify(data, null, 2), { persist: true });
         }
       } catch (error) {
         show(
           "Terjadi kesalahan saat menjalankan tes:\n" +
-          (error?.message || String(error))
+          (error?.message || String(error)),
+          { persist: true }
         );
       } finally {
         // Hanya perbarui sesi dan status tombol.
@@ -220,6 +238,7 @@
         loginButton.disabled = false;
         runButton.disabled = true;
         logoutButton.disabled = true;
+        clearSavedResult();
         show("Sudah keluar dari sesi pengujian.");
       } catch (error) {
         show("Terjadi kesalahan saat keluar: " + error.message);
@@ -227,9 +246,15 @@
       }
     });
 
-    // Periksa sesi saat halaman dibuka.
-    refreshSession().catch(() => {
-      show("Sesi belum tersedia. Silakan login ke proyek uji.");
+    // Pulihkan hasil terakhir sebelum memeriksa sesi.
+    // Pemeriksaan sesi tidak menimpa hasil tes yang tersimpan.
+    const previousResult = readSavedResult();
+    if (previousResult) result.textContent = previousResult;
+
+    refreshSession({ showStatus: !previousResult }).catch(() => {
+      if (!previousResult) {
+        show("Sesi belum tersedia. Silakan login ke proyek uji.");
+      }
     });
   </script>
 </body>
