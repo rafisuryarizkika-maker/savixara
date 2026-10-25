@@ -56,3 +56,10 @@ jobs:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/postgres-concurrency.test.ts
         
+      - name: Type-check real RPC idempotency test
+        run: deno check tests/rpc-idempotency.test.ts
+
+      - name: Run real RPC idempotency test
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-idempotency.test.ts
