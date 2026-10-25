@@ -11,6 +11,7 @@ Deno.test({
   fn: async () => {
     if (!databaseUrl) throw new Error("TEST_DATABASE_URL is required");
 
+    // Two independent pools model two concurrent database requests.
     const dbA = postgres(databaseUrl, { max: 1 });
     const dbB = postgres(databaseUrl, { max: 1 });
     const jobId = crypto.randomUUID();
@@ -18,6 +19,7 @@ Deno.test({
     const pageKey = `rpc-idempotency-test-${crypto.randomUUID()}`;
 
     try {
+      // Requires the dedicated test database to have the real schema and RPC.
       const installed = await dbA`
         SELECT
           to_regclass('public.melostore_sync_jobs') IS NOT NULL AS has_jobs,
@@ -30,6 +32,7 @@ Deno.test({
       assertEquals(installed[0].has_pages, true, "Missing melostore_sync_pages schema");
       assertEquals(installed[0].has_rpc, true, "Missing 9-argument RPC");
 
+      // A unique test job and an empty product page avoid touching products.
       await dbA`
         INSERT INTO public.melostore_sync_jobs
           (id, status, lease_token, lease_until)
@@ -52,7 +55,11 @@ Deno.test({
             0
           ) AS result
         `;
-        return rows[0].result as { ok: boolean; duplicate_page?: boolean };
+        return rows[0].result as {
+          ok: boolean;
+          duplicate_page?: boolean;
+          message?: string;
+        };
       };
 
       const [resultA, resultB] = await Promise.all([
@@ -83,6 +90,7 @@ Deno.test({
       assertEquals(jobRows[0].pages_fetched, 1, "Duplicate call must not advance page count");
       assertEquals(jobRows[0].processed_products, 0, "Empty test page must not change product count");
     } finally {
+      // Clean only this test's uniquely identified rows.
       await dbA`
         DELETE FROM public.melostore_sync_pages
         WHERE job_id = ${jobId}::uuid
