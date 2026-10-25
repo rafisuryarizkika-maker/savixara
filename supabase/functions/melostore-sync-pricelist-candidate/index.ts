@@ -219,35 +219,49 @@ Authorization: `Bearer ${accessToken}`,
 const { data: userData, error: userError } =
   await userClient.auth.getUser(accessToken);
 
-if (userError || !userData.user) {
-  return jsonResponse({
-    ok: false,
-    message: "Sesi login tidak valid atau sudah kedaluwarsa.",
-  }, 401);
-}
+const userRejection = rejectInvalidUser(
+  userData.user,
+  userError,
+);
+
+if (userRejection) {
+  return jsonResponse(
+    userRejection.body,
+    userRejection.status,
+  );
+}  
 
 const { data: claimsData, error: claimsError } =
   await userClient.auth.getClaims(accessToken);
 
-if (claimsError || claimsData?.claims?.aal !== "aal2") {
-  return jsonResponse({
-    ok: false,
-    message:
-      "Autentikasi tambahan AAL2 diperlukan untuk sinkronisasi. Silakan selesaikan verifikasi MFA lalu coba kembali.",
-    requires_mfa: true,
-  }, 403);
+const aal2Rejection = requireAal2(
+  claimsData?.claims,
+  claimsError,
+);
+
+if (aal2Rejection) {
+  return jsonResponse(
+    aal2Rejection.body,
+    aal2Rejection.status,
+  );
 }
+  
 
 const { data: isAdmin, error: adminError } =
   await userClient.rpc("is_admin");
 
-if (adminError || isAdmin !== true) {
-  return jsonResponse({
-    ok: false,
-    message: "Akses ditolak. Hanya admin SAVIXARA yang boleh sinkronisasi.",
-  }, 403);
+const adminRejection = requireAdmin(
+  isAdmin,
+  adminError,
+);
+
+if (adminRejection) {
+  return jsonResponse(
+    adminRejection.body,
+    adminRejection.status,
+  );
 }
-  
+    
 const db = createClient(supabaseUrl, serviceRoleKey, {
 auth: {
 persistSession: false,
