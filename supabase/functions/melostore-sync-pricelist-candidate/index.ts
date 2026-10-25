@@ -1,5 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import {
+  rejectInvalidUser,
+  requireAal2,
+  requireAdmin,
+} from "../_shared/melostore-auth-gate.ts";
+
 const corsHeaders = {
 "Access-Control-Allow-Origin": "https://rafisuryarizkika-maker.github.io",
 "Access-Control-Allow-Headers":
