@@ -33,6 +33,13 @@ jobs:
       - name: Type-check lease tests
         run: deno check tests/lease-guard.test.ts
 
+        
+      - name: Type-check auth gate tests
+        run: deno check tests/auth-gate.test.ts
+
+      - name: Run isolated auth gate tests
+        run: deno test tests/auth-gate.test.ts
+
       - name: Type-check Melostore candidate
         run: deno check --no-check=remote supabase/functions/melostore-sync-pricelist-candidate/index.ts
 
