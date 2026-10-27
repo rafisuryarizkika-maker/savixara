@@ -79,4 +79,14 @@ jobs:
         env:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-lease-guard.test.ts
+
+        
+      - name: Type-check real RPC catalog protection test
+        run: deno check tests/rpc-catalog-protection.test.ts
+
+      - name: Run real RPC catalog protection test
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-catalog-protection.test.ts
+        
         
