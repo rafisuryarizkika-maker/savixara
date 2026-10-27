@@ -168,7 +168,7 @@ Deno.test({
           ${jobId}::uuid,
           ${leaseToken}::uuid,
           ${pageKey},
-          ${JSON.stringify(products)}::jsonb,
+          ${db.json(products)},
           NULL::text,
           false,
           4,
