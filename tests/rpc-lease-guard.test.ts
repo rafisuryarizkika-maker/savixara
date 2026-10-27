@@ -6,7 +6,6 @@ const databaseUrl = Deno.env.get("TEST_DATABASE_URL");
 
 Deno.test({
   name: "RPC 9-param rejects invalid leases without mutating progress",
-  ignore: !databaseUrl,
   sanitizeResources: false,
   sanitizeOps: false,
   fn: async () => {
