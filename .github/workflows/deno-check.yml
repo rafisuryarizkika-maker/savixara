@@ -70,3 +70,13 @@ jobs:
         env:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-idempotency.test.ts
+
+        
+      - name: Type-check real RPC lease guard test
+        run: deno check tests/rpc-lease-guard.test.ts
+
+      - name: Run real RPC lease guard test
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-lease-guard.test.ts
+        
