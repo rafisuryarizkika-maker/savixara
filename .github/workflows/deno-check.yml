@@ -46,6 +46,13 @@ jobs:
       - name: Run lease guard tests
         run: deno test tests/lease-guard.test.ts
 
+        
+      - name: Type-check isolated HTTP auth tests
+        run: deno check tests/melostore-http-auth.test.ts
+
+      - name: Run isolated HTTP auth tests
+        run: deno test tests/melostore-http-auth.test.ts 
+
       - name: Type-check PostgreSQL concurrency test
         run: deno check tests/postgres-concurrency.test.ts
 
