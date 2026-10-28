@@ -443,7 +443,7 @@ const { data, error } = await db
 .from("melostore_sync_jobs")
 .insert({
 status: "running",
-created_by: userData.user!.id,
+created_by: authResult.userId,
 cursor: null,
 pages_fetched: 0,
 total_products: 0,
