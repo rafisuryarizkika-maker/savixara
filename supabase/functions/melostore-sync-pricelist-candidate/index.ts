@@ -182,16 +182,14 @@ message: "Gunakan metode POST.",
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const apiKey = Deno.env.get("MELOSTORE_API_KEY");
-const secretKey = Deno.env.get("MELOSTORE_SECRET_KEY");
 
-if (!supabaseUrl || !anonKey || !serviceRoleKey || !apiKey || !secretKey) {
-return jsonResponse({
-ok: false,
-message: "Secret Supabase atau Melostore belum lengkap. Periksa konfigurasi Secrets di Supabase.",
-}, 500);
+if (!supabaseUrl || !anonKey) {
+  return jsonResponse({
+    ok: false,
+    message: "Secret Supabase untuk autentikasi belum lengkap.",
+  }, 500);
 }
+  
 
 const accessToken = (req.headers.get("Authorization") ?? "")
 .replace(/^Bearer\s+/i, "")
@@ -261,7 +259,19 @@ if (adminRejection) {
     adminRejection.status,
   );
 }
-    
+
+
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const apiKey = Deno.env.get("MELOSTORE_API_KEY");
+const secretKey = Deno.env.get("MELOSTORE_SECRET_KEY");
+
+if (!serviceRoleKey || !apiKey || !secretKey) {
+  return jsonResponse({
+    ok: false,
+    message: "Secret Supabase atau Melostore belum lengkap. Periksa konfigurasi Secrets di Supabase.",
+  }, 500);
+} 
+  
 const db = createClient(supabaseUrl, serviceRoleKey, {
 auth: {
 persistSession: false,
