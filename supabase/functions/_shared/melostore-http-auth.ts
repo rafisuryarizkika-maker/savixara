@@ -120,8 +120,11 @@ export async function authenticateMelostoreRequest(
     };
   }
 
+  
   return {
-  ok: true,
-  accessToken,
-  userId: (user as { id: string }).id,
-};
+    ok: true,
+    accessToken,
+    userId: (user as { id: string }).id,
+  };
+}
+
