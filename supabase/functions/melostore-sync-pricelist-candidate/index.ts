@@ -193,7 +193,13 @@ const userClient = createClient(supabaseUrl, anonKey, {
     persistSession: false,
     autoRefreshToken: false,
   },
+  global: {
+    headers: {
+      Authorization: req.headers.get("Authorization") ?? "",
+    },
+  },
 });
+  
 
 const authResult = await authenticateMelostoreRequest(
   req,
