@@ -329,7 +329,16 @@ if (!authResult.ok) {
     },
   );
 }
-
+  
+// Safe auth-only diagnostic: stop before sync work.
+if (new URL(req.url).searchParams.get("auth_check_only") === "1") {
+  return jsonResponse({
+    ok: true,
+    auth_check_only: true,
+    message: "Autentikasi valid. Sinkronisasi tidak dijalankan.",
+  }, 200);
+}
+  
 const accessToken = authResult.accessToken;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const apiKey = Deno.env.get("MELOSTORE_API_KEY");
