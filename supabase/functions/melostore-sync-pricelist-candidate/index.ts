@@ -1,10 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import {
-  rejectInvalidUser,
-  requireAal2,
-  requireAdmin,
-} from "../_shared/melostore-auth-gate.ts";
+  authenticateMelostoreRequest,
+} from "../_shared/melostore-http-auth.ts";
 
 const corsHeaders = {
 "Access-Control-Allow-Origin": "https://rafisuryarizkika-maker.github.io",
@@ -189,78 +187,63 @@ if (!supabaseUrl || !anonKey) {
     message: "Secret Supabase untuk autentikasi belum lengkap.",
   }, 500);
 }
-  
-
-const accessToken = (req.headers.get("Authorization") ?? "")
-.replace(/^Bearer\s+/i, "")
-.trim();
-
-if (!accessToken) {
-return jsonResponse({
-ok: false,
-message: "Sesi login tidak ditemukan. Silakan login kembali.",
-}, 401);
-}
 
 const userClient = createClient(supabaseUrl, anonKey, {
-auth: {
-persistSession: false,
-autoRefreshToken: false,
-},
-global: {
-headers: {
-Authorization: `Bearer ${accessToken}`,
-},
-},
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
 });
-  
-const { data: userData, error: userError } =
-  await userClient.auth.getUser(accessToken);
 
-const userRejection = rejectInvalidUser(
-  userData.user,
-  userError,
+const authResult = await authenticateMelostoreRequest(
+  req,
+  {
+    getUser: async (accessToken) => {
+      const { data, error } =
+        await userClient.auth.getUser(accessToken);
+
+      return {
+        user: data.user,
+        error,
+      };
+    },
+
+    getClaims: async (accessToken) => {
+      const { data, error } =
+        await userClient.auth.getClaims(accessToken);
+
+      return {
+        claims: data?.claims ?? null,
+        error,
+      };
+    },
+
+    isAdmin: async () => {
+      const { data, error } =
+        await userClient.rpc("is_admin");
+
+      return {
+        value: data,
+        error,
+      };
+    },
+  },
 );
 
-if (userRejection) {
-  return jsonResponse(
-    userRejection.body,
-    userRejection.status,
-  );
-}  
-
-const { data: claimsData, error: claimsError } =
-  await userClient.auth.getClaims(accessToken);
-
-const aal2Rejection = requireAal2(
-  claimsData?.claims,
-  claimsError,
-);
-
-if (aal2Rejection) {
-  return jsonResponse(
-    aal2Rejection.body,
-    aal2Rejection.status,
+if (!authResult.ok) {
+  return new Response(
+    await authResult.response.text(),
+    {
+      status: authResult.response.status,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    },
   );
 }
-  
 
-const { data: isAdmin, error: adminError } =
-  await userClient.rpc("is_admin");
-
-const adminRejection = requireAdmin(
-  isAdmin,
-  adminError,
-);
-
-if (adminRejection) {
-  return jsonResponse(
-    adminRejection.body,
-    adminRejection.status,
-  );
-}
-
-
+const accessToken = authResult.accessToken;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const apiKey = Deno.env.get("MELOSTORE_API_KEY");
 const secretKey = Deno.env.get("MELOSTORE_SECRET_KEY");
