@@ -26,6 +26,7 @@ export type AuthDependencies = {
 export type AuthSuccess = {
   ok: true;
   accessToken: string;
+  userId: string;
 };
 
 export type AuthFailure = {
@@ -120,7 +121,7 @@ export async function authenticateMelostoreRequest(
   }
 
   return {
-    ok: true,
-    accessToken,
-  };
-  }
+  ok: true,
+  accessToken,
+  userId: (user as { id: string }).id,
+};
