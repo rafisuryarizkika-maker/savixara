@@ -225,12 +225,14 @@ Deno.test({
           operationsCompleted = true;
           throw new Error("ROLLBACK_GAME_RPC_TEST");
         });
-      } catch (error) {
+            } catch (error) {
         if (
-          !operationsCompleted &&
+          operationsCompleted &&
           error instanceof Error &&
           error.message === "ROLLBACK_GAME_RPC_TEST"
         ) {
+          // Expected error: transaction rollback marker.
+        } else {
           throw error;
         }
       }
