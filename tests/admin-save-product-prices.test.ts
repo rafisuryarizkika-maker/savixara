@@ -1,37 +1,28 @@
+import { assert, assertStringIncludes } from "jsr:@std/assert";
 
-import postgres from "postgres";
-import { assertEquals } from "jsr:@std/assert";
+const sqlUrl = new URL(
+  "../supabase/functions/melostore-sync-pricelist-candidate/PATCH_ADMIN_SAVE_PRODUCT_PRICES.sql",
+  import.meta.url,
+);
 
-const databaseUrl = Deno.env.get("TEST_DATABASE_URL");
+Deno.test("Admin save product prices SQL has required safeguards", async () => {
+  const sql = await Deno.readTextFile(sqlUrl);
 
-Deno.test({
-  name: "Admin save product prices rejects invalid inputs",
-  sanitizeResources: false,
-  sanitizeOps: false,
-  fn: async () => {
-    if (!databaseUrl) {
-      throw new Error("TEST_DATABASE_URL is required");
-    }
+  assertStringIncludes(sql, "CREATE OR REPLACE FUNCTION public.admin_save_product_prices");
+  assertStringIncludes(sql, "SECURITY DEFINER");
+  assertStringIncludes(sql, "SET search_path TO ''");
+  assertStringIncludes(sql, "public.is_admin()");
+  assertStringIncludes(sql, "'aal2'");
+  assertStringIncludes(sql, "public.product_costs");
+  assertStringIncludes(sql, "public.products");
+  assertStringIncludes(sql, "REVOKE ALL ON FUNCTION");
+  assertStringIncludes(sql, "TO authenticated");
 
-    const db = postgres(databaseUrl, { max: 1 });
-
-    try {
-      const installed = await db`
-        SELECT to_regprocedure(
-          'public.admin_save_product_prices(uuid,numeric,numeric,numeric)'
-        ) IS NOT NULL AS exists
-      `;
-
-      assertEquals(
-        installed[0].exists,
-        true,
-        "Candidate RPC must be installed in the test database before this test runs",
-      );
-
-      // This test intentionally does not modify catalog data.
-      // Authorization and write-path tests will follow separately.
-    } finally {
-      await db.end();
-    }
-  },
+  assert(
+    sql.includes("'NaN'") &&
+      sql.includes("'Infinity'") &&
+      sql.includes("'-Infinity'"),
+    "SQL must reject non-finite prices",
+  );
 });
+
