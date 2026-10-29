@@ -58,24 +58,32 @@ export default function Admin({ onBack }) {
 
     setGames(data || []);
   }
+  
+async function loadProducts() {
+  setProductsLoading(true);
 
-  async function loadProducts() {
-    setProductsLoading(true);
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('sort_order', { ascending: true });
+  try {
+    const { data, error } = await supabase.rpc(
+      'admin_list_products'
+    );
 
     if (error) {
-      setMessage('Gagal memuat produk: ' + error.message);
-      setProductsLoading(false);
+      setMessage(
+        'Gagal memuat produk: ' + error.message
+      );
       return;
     }
 
     setProducts(data || []);
+  } catch (error) {
+    setMessage(
+      'Gagal memuat produk: ' +
+        (error?.message || 'Kesalahan tidak diketahui.')
+    );
+  } finally {
     setProductsLoading(false);
   }
+}
 
   useEffect(() => {
     let active = true;
