@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authenticateMelostoreRequest } from "../_shared/melostore-http-auth.ts";
 
 const corsHeaders = {
 "Access-Control-Allow-Origin": "https://rafisuryarizkika-maker.github.io",
@@ -6,91 +7,6 @@ const corsHeaders = {
 "authorization, apikey, x-client-info, content-type",
 "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
-type GateRejection = {
-  status: 401 | 403;
-  body: Record<string, unknown>;
-};
-
-function rejectInvalidUser(user: unknown, error: unknown): GateRejection | null {
-  if (error || !user) {
-    return {
-      status: 401,
-      body: { ok: false, message: "Sesi login tidak valid atau sudah kedaluwarsa." },
-    };
-  }
-  return null;
-}
-
-function requireAal2(
-  claims: { aal?: unknown } | null | undefined,
-  error: unknown,
-): GateRejection | null {
-  if (error || claims?.aal !== "aal2") {
-    return {
-      status: 403,
-      body: {
-        ok: false,
-        message: "Autentikasi tambahan AAL2 diperlukan untuk sinkronisasi.",
-        requires_mfa: true,
-      },
-    };
-  }
-  return null;
-}
-
-function requireAdmin(isAdmin: unknown, error: unknown): GateRejection | null {
-  if (error || isAdmin !== true) {
-    return {
-      status: 403,
-      body: { ok: false, message: "Akses ditolak. Hanya admin SAVIXARA yang boleh sinkronisasi." },
-    };
-  }
-  return null;
-}
-
-type AuthSuccess = { ok: true; accessToken: string; userId: string };
-type AuthFailure = { ok: false; response: Response };
-
-function authFailure(body: Record<string, unknown>, status: number): AuthFailure {
-  return {
-    ok: false,
-    response: new Response(JSON.stringify(body), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    }),
-  };
-}
-
-async function authenticateMelostoreRequest(
-  req: Request,
-  deps: {
-    getUser: (token: string) => Promise<{ user: unknown; error: unknown }>;
-    getClaims: (token: string) => Promise<{ claims: { aal?: unknown } | null | undefined; error: unknown }>;
-    isAdmin: () => Promise<{ value: unknown; error: unknown }>;
-  },
-): Promise<AuthSuccess | AuthFailure> {
-  const accessToken = (req.headers.get("Authorization") ?? "")
-    .replace(/^Bearer\s+/i, "")
-    .trim();
-  if (!accessToken) {
-    return authFailure({ ok: false, message: "Sesi login tidak ditemukan. Silakan login kembali." }, 401);
-  }
-
-  const { user, error: userError } = await deps.getUser(accessToken);
-  const userRejection = rejectInvalidUser(user, userError);
-  if (userRejection) return authFailure(userRejection.body, userRejection.status);
-
-  const { claims, error: claimsError } = await deps.getClaims(accessToken);
-  const aal2Rejection = requireAal2(claims, claimsError);
-  if (aal2Rejection) return authFailure(aal2Rejection.body, aal2Rejection.status);
-
-  const { value: admin, error: adminError } = await deps.isAdmin();
-  const adminRejection = requireAdmin(admin, adminError);
-  if (adminRejection) return authFailure(adminRejection.body, adminRejection.status);
-
-  return { ok: true, accessToken, userId: (user as { id: string }).id };
-}
 
 const PROVIDER_URL = "https://api.melostore.id/api/v1/h2h/pricelists";
 const PROVIDER_DELAY_MS = 3_200;
