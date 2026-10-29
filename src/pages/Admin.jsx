@@ -46,10 +46,7 @@ export default function Admin({ onBack }) {
   });
 
   async function loadGames() {
-    const { data, error } = await supabase
-      .from('games')
-      .select('*')
-      .order('sort_order', { ascending: true });
+    const { data, error } = await supabase.rpc('admin_list_games');
 
     if (error) {
       setMessage('Gagal memuat game: ' + error.message);
