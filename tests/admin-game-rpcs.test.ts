@@ -81,22 +81,26 @@ Deno.test({
       async function expectDenied(
         userId: string,
         aal: "aal1" | "aal2",
-        operation: "create" | "status" | "delete",
+        operation: "list" | "create" | "status" | "delete",
       ) {
         let caught: unknown;
 
         try {
-          await withClaims(userId, aal, async (tx) => {
-            if (operation === "create") {
-              await tx`
-                SELECT public.admin_create_game(
-                  'RPC Test Game',
-                  'rpc-test-game',
-                  NULL, NULL, NULL, NULL, NULL,
-                  0, true
-                )
-              `;
-            } else if (operation === "status") {
+          await withClaims(userId, aal, async (tx) => {     
+         if (operation === "list") {
+          await tx`
+            SELECT count(*) FROM public.admin_list_games()
+          `;
+        } else if (operation === "create") {
+          await tx`
+            SELECT public.admin_create_game(
+              'RPC Test Game',
+              'rpc-test-game',
+              NULL, NULL, NULL, NULL, NULL,
+              0, true
+            )
+          `;    
+       } else if (operation === "status") {
               await tx`
                 SELECT public.admin_set_game_status(
                   ${crypto.randomUUID()}::uuid,
@@ -122,7 +126,12 @@ Deno.test({
         );
       }
 
-      for (const operation of ["create", "status", "delete"] as const) {
+      for (const operation of [
+  "list",
+  "create",
+  "status",
+  "delete",
+] as const) {
         await expectDenied(non_admin_id, "aal2", operation);
         await expectDenied(admin_id, "aal1", operation);
       }
@@ -184,6 +193,16 @@ Deno.test({
         }
       }
       
+    // Admin AAL2 must be able to list games.
+    await withClaims(admin_id, "aal2", async (tx) => {
+      const result = await tx`
+        SELECT count(*)::integer AS count
+        FROM public.admin_list_games()
+      `;
+
+      assertEquals(typeof result[0].count, "number");
+    });
+        
       // Test create and status update, then force a rollback.
       const suffix = crypto.randomUUID()
         .replaceAll("-", "")
