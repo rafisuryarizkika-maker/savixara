@@ -49,12 +49,12 @@ Deno.test({
         );
       }
 
-      async function withClaims<T>(
-        userId: string,
-        aal: "aal1" | "aal2",
-        fn: (tx: postgres.TransactionSql) => Promise<T>,
-      ): Promise<T> {
-        return await db.begin(async (tx) => {
+      async function withClaims(
+  userId: string,
+  aal: "aal1" | "aal2",
+  fn: (tx: postgres.TransactionSql) => Promise<unknown>,
+): Promise<void> {
+  await db.begin(async (tx) => {
           await tx`SET LOCAL ROLE authenticated`;
 
           const claims = JSON.stringify({
@@ -74,8 +74,8 @@ Deno.test({
               )
           `;
 
-          return await fn(tx);
-        });
+          await fn(tx);
+});
       }
 
       async function expectDenied(
