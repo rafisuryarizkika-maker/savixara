@@ -621,10 +621,13 @@ async function loadProducts() {
   async function toggleGame(game) {
     setMessage('');
 
-    const { error } = await supabase
-      .from('games')
-      .update({ status: !game.status })
-      .eq('id', game.id);
+    const { error } = await supabase.rpc(
+  'admin_set_game_status',
+  {
+    p_game_id: game.id,
+    p_status: !game.status,
+  }
+);
 
     if (error) {
       setMessage('Status gagal diubah: ' + error.message);
@@ -645,10 +648,12 @@ async function loadProducts() {
 
     setMessage('');
 
-    const { error } = await supabase
-      .from('games')
-      .delete()
-      .eq('id', game.id);
+    const { error } = await supabase.rpc(
+  'admin_delete_game',
+  {
+    p_game_id: game.id,
+  }
+);
 
     if (error) {
       setMessage('Game gagal dihapus: ' + error.message);
