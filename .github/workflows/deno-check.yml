@@ -161,6 +161,16 @@ jobs:
         env:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }} 
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net --allow-read=supabase/functions/melostore-sync-pricelist-candidate/PATCH_ADMIN_SAVE_PRODUCT_PRICES.sql tests/admin-save-product-prices.test.ts
+
+        
+      - name: Type-check admin game RPC tests
+        run: deno check tests/admin-game-rpcs.test.ts
+
+      - name: Run admin game RPC tests
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/admin-game-rpcs.test.ts
+        
         
         
         
