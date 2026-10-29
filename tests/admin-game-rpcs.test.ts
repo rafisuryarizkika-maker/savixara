@@ -165,7 +165,7 @@ Deno.test({
             await withClaims(admin_id, "aal2", async (tx) => {
               await tx`
                 SELECT public.admin_create_game(
-                  ${existing[0].name},
+                  ${existing[0].slug.replaceAll("-", " ")},
                   ${existing[0].slug},
                   NULL, NULL, NULL, NULL, NULL,
                   0, true
