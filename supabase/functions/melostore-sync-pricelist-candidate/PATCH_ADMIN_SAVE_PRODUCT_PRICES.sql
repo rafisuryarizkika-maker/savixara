@@ -27,17 +27,24 @@ BEGIN
       USING ERRCODE = '42501';
   END IF;
 
-  -- Validate all inputs before writing.
+  -- Validate all inputs before writing.  
   IF p_product_id IS NULL
-     OR p_cost_price IS NULL
-     OR p_selling_price IS NULL
-     OR p_cost_price < 0
-     OR p_selling_price < 0
-     OR (p_promo_price IS NOT NULL AND p_promo_price < 0)
-  THEN
-    RAISE EXCEPTION 'Invalid product price input'
-      USING ERRCODE = '22023';
-  END IF;
+   OR p_cost_price IS NULL
+   OR p_selling_price IS NULL
+   OR p_cost_price < 0
+   OR p_selling_price < 0
+   OR (p_promo_price IS NOT NULL AND p_promo_price < 0)
+   OR p_cost_price::text IN ('NaN', 'Infinity', '-Infinity')
+   OR p_selling_price::text IN ('NaN', 'Infinity', '-Infinity')
+   OR (
+     p_promo_price IS NOT NULL
+     AND p_promo_price::text IN ('NaN', 'Infinity', '-Infinity')
+   )
+THEN
+  RAISE EXCEPTION 'Invalid product price input'
+    USING ERRCODE = '22023';
+END IF;
+
 
   -- Lock and verify the product exists.
   PERFORM 1
