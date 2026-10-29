@@ -251,7 +251,6 @@ Deno.test({
         0,
         "Rolled-back test game must not persist",
       );
-      );
     } finally {
       await db.end();
     }
