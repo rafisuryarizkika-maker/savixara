@@ -71,7 +71,7 @@ IF current_lease_until IS NULL OR current_lease_until <= clock_timestamp() THEN
 RAISE EXCEPTION 'Lease penguncian sudah kedaluwarsa';
 END IF;
 
-IF job_status NOT IN ('pending', 'running', 'paused') THEN
+IF job_status <> 'running' THEN
 RAISE EXCEPTION 'Pekerjaan tidak dapat dilanjutkan';
 END IF;
 
@@ -269,7 +269,7 @@ IF NOT FOUND THEN
 RAISE EXCEPTION 'Pekerjaan sinkronisasi tidak ditemukan';
 END IF;
 
-IF job_status NOT IN ('pending', 'running', 'paused') THEN
+IF job_status <> 'running' THEN
 RAISE EXCEPTION 'Pekerjaan tidak dapat dilanjutkan';
 END IF;
 
