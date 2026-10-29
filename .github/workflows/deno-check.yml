@@ -143,6 +143,16 @@ jobs:
         env:
           TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-decimal-price.test.ts
+
+        
+      - name: Type-check admin cost RPC authorization test
+        run: deno check tests/admin-cost-rpc-auth.test.ts
+
+      - name: Run admin cost RPC authorization test
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/admin-cost-rpc-auth.test.ts
+        
         
         
         
