@@ -462,12 +462,20 @@ export default function Admin({ onBack }) {
       setSyncRunning(false);
     }
   }
-
+  
   async function saveProduct(product) {
     setMessage('');
 
-    const costPrice = Number(product.cost_price);
-    const sellingPrice = Number(product.selling_price);
+    const costPrice =
+      product.cost_price === '' || product.cost_price == null
+        ? NaN
+        : Number(product.cost_price);
+
+    const sellingPrice =
+      product.selling_price === '' || product.selling_price == null
+        ? NaN
+        : Number(product.selling_price);
+
     const promoPrice =
       product.promo_price === '' || product.promo_price == null
         ? null
@@ -479,7 +487,7 @@ export default function Admin({ onBack }) {
       costPrice < 0 ||
       sellingPrice < 0
     ) {
-      setMessage('Harga modal dan harga jual harus valid.');
+      setMessage('Harga modal dan harga jual harus valid dan tidak negatif.');
       return;
     }
 
@@ -494,22 +502,30 @@ export default function Admin({ onBack }) {
     setProductSavingId(product.id);
 
     try {
-      const { error } = await supabase
-        .from('products')
-        .update({
-          cost_price: costPrice,
-          selling_price: sellingPrice,
-          promo_price: promoPrice,
-        })
-        .eq('id', product.id);
+      const { error } = await supabase.rpc(
+        'admin_save_product_prices',
+        {
+          p_product_id: product.id,
+          p_cost_price: costPrice,
+          p_selling_price: sellingPrice,
+          p_promo_price: promoPrice,
+        }
+      );
 
       if (error) {
-        setMessage('Gagal menyimpan harga: ' + error.message);
+        setMessage(
+          'Gagal menyimpan harga: ' + error.message
+        );
         return;
       }
 
       setMessage('Harga produk berhasil diperbarui.');
       await loadProducts();
+    } catch (error) {
+      setMessage(
+        'Gagal menyimpan harga: ' +
+          (error?.message || 'Kesalahan tidak diketahui.')
+      );
     } finally {
       setProductSavingId(null);
     }
