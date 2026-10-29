@@ -119,6 +119,15 @@ jobs:
         run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-lease-guard.test.ts
 
         
+      - name: Type-check RPC 8-param wrapper test
+        run: deno check tests/rpc-lease-wrapper-8-param.test.ts
+
+      - name: Run RPC 8-param wrapper test
+        env:
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: deno test --allow-env=TEST_DATABASE_URL,PG* --allow-net tests/rpc-lease-wrapper-8-param.test.ts
+
+        
       - name: Type-check real RPC catalog protection test
         run: deno check tests/rpc-catalog-protection.test.ts
 
