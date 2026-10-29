@@ -580,7 +580,20 @@ async function loadProducts() {
     };
 
     try {
-      const { error } = await supabase.from('games').insert(payload);
+      const { data, error } = await supabase.rpc(
+  'admin_create_game',
+  {
+    p_name: payload.name,
+    p_slug: payload.slug,
+    p_publisher: payload.publisher,
+    p_category: payload.category,
+    p_cover_url: payload.cover_url,
+    p_icon_url: payload.icon_url,
+    p_description: payload.description,
+    p_sort_order: payload.sort_order,
+    p_status: payload.status,
+  }
+);
 
       if (error) {
         setMessage('Game gagal ditambahkan: ' + error.message);
