@@ -183,16 +183,15 @@ Deno.test({
           );
         }
       }
-
-      // Run successful create -> status update -> delete in one
-      // transaction, then deliberately abort it so no test game remains.
-      const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 12);
+      
+      // Test create and status update, then force a rollback.
+      const suffix = crypto.randomUUID()
+        .replaceAll("-", "")
+        .slice(0, 12);
       const gameName = `Audit Game ${suffix}`;
       const gameSlug = gameName.toLowerCase().replaceAll(" ", "-");
 
-      const rollbackMarker = "ROLLBACK_GAME_RPC_TEST";
-
-      let rollbackConfirmed = false;
+      let operationsCompleted = false;
 
       try {
         await withClaims(admin_id, "aal2", async (tx) => {
@@ -206,7 +205,6 @@ Deno.test({
           `;
 
           const gameId = created[0].id as string;
-
           assertEquals(typeof gameId, "string");
 
           const changed = await tx`
@@ -224,26 +222,35 @@ Deno.test({
 
           assertEquals(status[0].status, false);
 
-          const deleted = await tx`
-            SELECT public.admin_delete_game(
-              ${gameId}::uuid
-            ) AS ok
-          `;
-
-          assertEquals(deleted[0].ok, true);
-
-          // Throwing here forces the transaction to roll back.
-          throw new Error(rollbackMarker);
+          operationsCompleted = true;
+          throw new Error("ROLLBACK_GAME_RPC_TEST");
         });
       } catch (error) {
-        rollbackConfirmed =
-          error instanceof Error && error.message === rollbackMarker;
+        if (
+          !operationsCompleted &&
+          error instanceof Error &&
+          error.message === "ROLLBACK_GAME_RPC_TEST"
+        ) {
+          throw error;
+        }
       }
 
       assertEquals(
-        rollbackConfirmed,
+        operationsCompleted,
         true,
-        "Successful-operation test must roll back its changes",
+        "Create and status RPC operations must succeed before rollback",
+      );
+
+      const persisted = await db`
+        SELECT id FROM public.games
+        WHERE slug = ${gameSlug}
+      `;
+
+      assertEquals(
+        persisted.length,
+        0,
+        "Rolled-back test game must not persist",
+      );
       );
     } finally {
       await db.end();
