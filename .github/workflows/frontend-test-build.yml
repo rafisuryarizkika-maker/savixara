@@ -1,0 +1,36 @@
+name: Frontend Isolated Test Build
+
+on:
+  push:
+    branches:
+      - audit/deno-lease-patch-20261018
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.SAVIXARA_TEST_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SAVIXARA_TEST_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify isolated Supabase target
+        run: node scripts/verify-supabase-test-target.mjs
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
