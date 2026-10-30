@@ -263,7 +263,7 @@ async function loadProducts() {
       }
 
       const { data, error } = await supabase.functions.invoke(
-        'melostore-sync-pricelist',
+        'melostore-sync-pricelist-audit-candidate',
         {
           body: { limit: 5, dry_run: true },
           headers: { Authorization: `Bearer ${session.access_token}` },
@@ -349,7 +349,7 @@ async function loadProducts() {
           : { limit: 500 };
 
         const { data, error } = await supabase.functions.invoke(
-          'melostore-sync-pricelist',
+          'melostore-sync-pricelist-audit-candidate',
           {
             body: requestBody,
             headers: { Authorization: `Bearer ${session.access_token}` },
