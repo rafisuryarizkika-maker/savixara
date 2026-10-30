@@ -422,10 +422,25 @@ useEffect(() => {
       }
 
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('game_id', game.id)
-        .order('selling_price', { ascending: true });
+  .from('products')
+  .select(`
+    id,
+    game_id,
+    name,
+    slug,
+    category,
+    provider,
+    provider_product_code,
+    selling_price,
+    promo_price,
+    description,
+    status,
+    sort_order,
+    category_id
+  `)
+  .eq('game_id', game.id)
+  .eq('status', true)
+  .order('selling_price', { ascending: true });
 
       if (error) {
         throw error;
