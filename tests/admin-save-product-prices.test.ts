@@ -71,12 +71,12 @@ Deno.test({
       `;
       const beforeDedicatedCost = beforeCostRows[0]?.cost_price ?? null;
 
-      async function withClaims<T>(
+      async function withClaims(
         userId: string,
         aal: "aal1" | "aal2",
-        fn: (tx: postgres.TransactionSql) => Promise<T>,
-      ): Promise<T> {
-        return await db.begin(async (tx) => {
+        fn: (tx: postgres.TransactionSql) => Promise<unknown>,
+      ): Promise<void> {
+        await db.begin(async (tx) => {
           await tx`SET LOCAL ROLE authenticated`;
 
           const claims = JSON.stringify({
@@ -92,7 +92,7 @@ Deno.test({
               set_config('request.jwt.claim.role', 'authenticated', true)
           `;
 
-          return await fn(tx);
+          await fn(tx);
         });
       }
 
