@@ -296,7 +296,7 @@ async function loadProducts() {
 
       setDryRunMessage(
         data.message ||
-          'Simulasi selesai. Katalog produk tidak diubah; metadata pekerjaan simulasi dicatat.'
+          'Simulasi selesai. Katalog produk tidak diubah dan pekerjaan sinkronisasi tidak dibuat.'
       );
     } catch (error) {
       setDryRunMessage(
@@ -700,13 +700,13 @@ async function loadProducts() {
       <section className="admin-panel">
         <h2>Koneksi Provider</h2>
         <p>Periksa apakah SAVIXARA dapat menghubungi akun Melostore.</p>
-        <button
-          type="button"
-          onClick={testMelostoreConnection}
-          disabled={providerTesting}
-        >
-          {providerTesting ? 'Memeriksa koneksi...' : 'Tes Koneksi Melostore'}
+        <button type="button" disabled>
+          Tes Koneksi Melostore (belum tersedia di lingkungan audit)
         </button>
+        <p className="admin-message" role="status">
+          Fungsi melostore-profile belum tersedia di savixara-test. Tombol ini
+          dinonaktifkan agar tidak menghasilkan permintaan ke fungsi yang tidak ada.
+        </p>
         {providerMessage && (
           <p className="admin-message" role="status">
             {providerMessage}
@@ -720,15 +720,13 @@ async function loadProducts() {
           Ambil maksimal lima item untuk memeriksa respons daftar harga.
           Pengujian ini tidak membuat transaksi.
         </p>
-        <button
-          type="button"
-          onClick={testMelostorePricelist}
-          disabled={pricelistTesting}
-        >
-          {pricelistTesting
-            ? 'Mengambil pricelist...'
-            : 'Tes Pricelist Melostore'}
+        <button type="button" disabled>
+          Tes Pricelist Melostore (belum tersedia di lingkungan audit)
         </button>
+        <p className="admin-message" role="status">
+          Fungsi melostore-pricelist belum tersedia di savixara-test. Tombol ini
+          dinonaktifkan sampai endpoint dan pengujiannya tersedia.
+        </p>
 
         {pricelistMessage && (
           <p className="admin-message" role="status">
@@ -786,9 +784,9 @@ async function loadProducts() {
           {dryRunRunning ? 'Menjalankan simulasi...' : 'Simulasi Pricelist (Dry Run)'}
         </button>
         <p>
-          Simulasi hanya memeriksa satu halaman (maksimal 5 item). Katalog produk
-          tidak diubah, tetapi metadata pekerjaan simulasi akan dicatat dan dapat
-          berstatus paused.
+          Simulasi memeriksa maksimal 5 item melalui permintaan baca ke provider.
+          Simulasi ini tidak membuat pekerjaan sinkronisasi dan tidak mengubah
+          katalog produk. Permintaan ini tetap menghubungi API Melostore.
         </p>
         {dryRunMessage && (
           <p className="admin-message" role="status">
